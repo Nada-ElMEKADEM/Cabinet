@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Réserver une consultation</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 700px; margin: auto; padding: 20px; }
+        label { display: block; margin-top: 15px; font-weight: bold; }
+        select, input[type=text], button { width: 100%; padding: 8px; margin-top: 5px; }
+        .btn { margin-top: 20px; padding: 10px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }
+        .btn:hover { background-color: #45a049; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>Réserver une consultation</h1>
+
+    <form method="POST" id="bookingForm">
+        <label for="specialite">Choisissez une spécialité :</label>
+        <select name="specialite" id="specialite" required>
+            <option value="">-- Sélectionnez une spécialité --</option>
+            {% for s in specialites %}
+                <option value="{{ s }}">{{ s }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="medecin">Médecin disponible :</label>
+        <select name="medecin_id" id="medecin" required disabled>
+            <option value="">Choisissez une spécialité d'abord</option>
+        </select>
+
+        <label for="creneau">Créneau horaire disponible :</label>
+        <select name="creneau" id="creneau" required disabled>
+            <option value="">Choisissez un médecin d'abord</option>
+        </select>
+
+        <button type="submit" class="btn">Réserver</button>
+    </form>
+
+    <script>
+        const specialiteSelect = document.getElementById('specialite');
+        const medecinSelect = document.getElementById('medecin');
+        const creneauSelect = document.getElementById('creneau');
+
+        specialiteSelect.addEventListener('change', () => {
+            const specialite = specialiteSelect.value;
+            medecinSelect.innerHTML = '<option>Chargement...</option>';
+            medecinSelect.disabled = true;
+            creneauSelect.innerHTML = '<option>Choisissez un médecin d\'abord</option>';
+            creneauSelect.disabled = true;
+
+            if (!specialite) {
+                medecinSelect.innerHTML = '<option>Choisissez une spécialité d\'abord</option>';
+                medecinSelect.disabled = true;
+                return;
+            }
+
+            fetch(`/medecins_par_specialite?specialite=${encodeURIComponent(specialite)}`)
+                .then(res => res.json())
+                .then(data => {
+                    medecinSelect.disabled = false;
+                    if(data.length === 0){
+                        medecinSelect.innerHTML = '<option>Aucun médecin trouvé</option>';
+                        medecinSelect.disabled = true;
+                        return;
+                    }
+                    medecinSelect.innerHTML = '<option value="">-- Sélectionnez un médecin --</option>';
+                    data.forEach(medecin => {
+                        medecinSelect.innerHTML += `<option value="${medecin._id}">${medecin.prenom} ${medecin.nom}</option>`;
+                    });
+                })
+                .catch(() => {
+                    medecinSelect.innerHTML = '<option>Erreur lors du chargement</option>';
+                    medecinSelect.disabled = true;
+                });
+        });
+
+        medecinSelect.addEventListener('change', () => {
+            const medecinId = medecinSelect.value;
+            creneauSelect.innerHTML = '<option>Chargement...</option>';
+            creneauSelect.disabled = true;
+
+            if (!medecinId) {
+                creneauSelect.innerHTML = '<option>Choisissez un médecin d\'abord</option>';
+                creneauSelect.disabled = true;
+                return;
+            }
+
+            fetch(`/horaires_medecin?id=${encodeURIComponent(medecinId)}`)
+                .then(res => res.json())
+                .then(data => {
+                    creneauSelect.disabled = false;
+                    if(Object.keys(data).length === 0){
+                        creneauSelect.innerHTML = '<option>Aucun créneau disponible</option>';
+                        creneauSelect.disabled = true;
+                        return;
+                    }
+                    creneauSelect.innerHTML = '<option value="">-- Sélectionnez un créneau --</option>';
+
+                    // data = { lundi: [ {start: '08:00', end: '12:00'}, ... ], ... }
+                    for (const jour in data) {
+    data[jour].forEach(creneau => {
+        if (creneau.start && creneau.end) {
+            const val = `${jour} ${creneau.start} - ${creneau.end}`;
+            creneauSelect.innerHTML += `<option value="${val}">${val}</option>`;
+        } else {
+            console.warn("Créneau mal formé pour", jour, creneau);
+        }
+    });
+}
+
+                })
+                .catch(() => {
+                    creneauSelect.innerHTML = '<option>Erreur lors du chargement</option>';
+                    creneauSelect.disabled = true;
+                });
+        });
+    </script>
+</body>
+</html>
