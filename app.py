@@ -1,4 +1,4 @@
-import datetime
+
 from bson import ObjectId
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from config.database import mongo_db
@@ -6,6 +6,7 @@ from routes.admin_routes import admin_bp
 from routes.medecin_routes import medecin_bp
 from routes.patient_routes import patient_bp
 from services.admin_service import create_patient, create_medecin, get_medecin_by_email, get_patient_by_email
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 app.secret_key = 'change_this_secret'
@@ -200,36 +201,26 @@ def book():
         except KeyError:
             flash("Tous les champs sont requis", "danger")
             return redirect(url_for('book'))
-
         medecin = mongo_db.medecins.find_one({"_id": ObjectId(medecin_id)})
-        if not medecin:
-            flash("Médecin introuvable", "danger")
-            return redirect(url_for('book'))
 
-        # Validation du créneau
-        jour_creneau, heure_debut, heure_fin = None, None, None
-        for jour, creneaux in medecin.get('horaires', {}).items():
-            for c in creneaux:
-                if f"{jour} {c['start']} - {c['end']}" == creneau:
-                    jour_creneau, heure_debut, heure_fin = jour, c['start'], c['end']
-                    break
-            if jour_creneau:
-                break
-
-        if not jour_creneau:
+        try:
+            # Format attendu : "lundi 08:00 - 10:00"
+            jour_creneau, heure_debut, _, heure_fin = creneau.split()
+        except Exception:
             flash("Créneau invalide", "danger")
             return redirect(url_for('book'))
 
-        # Vérification de la disponibilité
-        if mongo_db.consultations.find_one({
+        # ⚠️ Vérification si le créneau est déjà pris
+        deja_pris = mongo_db.consultations.find_one({
             "medecin_id": medecin_id,
             "date": jour_creneau,
             "heure": heure_debut
-        }):
-            flash("Créneau déjà réservé", "danger")
+        })
+
+        if deja_pris:
+            flash("⚠️ Ce créneau est déjà réservé. Veuillez en choisir un autre.", "warning")
             return redirect(url_for('book'))
 
-        # Création de la consultation
         consultation = {
             "patient_email": patient_email,
             "medecin_id": medecin_id,
@@ -237,16 +228,34 @@ def book():
             "specialite": specialite,
             "date": jour_creneau,
             "heure": heure_debut,
+            "heure_fin": heure_fin,
             "created_at": datetime.datetime.utcnow()
         }
         mongo_db.consultations.insert_one(consultation)
 
-        flash("Réservation confirmée", "success")
+
+
+        flash("✅ Réservation confirmée", "success")
         return redirect(url_for('patient_page', email=patient_email))
 
+    # 👇 En cas de GET, affichage du formulaire
     specialites = mongo_db.medecins.distinct("specialite")
     return render_template('book.html', specialites=specialites)
 
+@app.route('/admin/add-user', methods=['GET', 'POST'])
+def add_user():
+    if request.method == 'POST':
+        nom = request.form['nom']
+        prenom = request.form['prenom']
+        email = request.form['email']
+        role = request.form['role']
+
+        # 🔄 À compléter : insérer l'utilisateur dans la base de données
+        print(f"Ajout de : {nom} {prenom} ({role})")
+
+        return redirect(url_for('admin_dashboard'))
+
+    return render_template('add_user.html')
 
 @app.route('/medecins_par_specialite')
 def medecins_par_specialite():
@@ -275,5 +284,38 @@ def horaires_medecin():
     # Renvoie les horaires au format brut (objet start/end pour JS)
     horaires = medecin.get('horaires', {})
     return jsonify(horaires)
+@app.route('/horaires_fixes')
+def horaires_fixes():
+    medecin_id = request.args.get('id')
+    if not medecin_id:
+        return jsonify({})
+
+    medecin = mongo_db.medecins.find_one({"_id": ObjectId(medecin_id)})
+    if not medecin:
+        return jsonify({})
+
+    horaires = medecin.get('horaires', {})
+    creneaux_fixes = {}
+
+    for jour, liste in horaires.items():
+        decoupes = []
+        for c in liste:
+            try:
+                start = datetime.strptime(c['start'], "%H:%M")
+                end = datetime.strptime(c['end'], "%H:%M")
+            except ValueError:
+                continue  # Ignore les formats invalides
+
+            # Découpe uniquement si le créneau fait au moins 2h
+            while (end - start) >= timedelta(hours=2):
+                slot_start = start.strftime("%H:%M")
+                slot_end = (start + timedelta(hours=2)).strftime("%H:%M")
+                decoupes.append({"start": slot_start, "end": slot_end})
+                start += timedelta(hours=2)
+
+        if decoupes:
+            creneaux_fixes[jour] = decoupes
+
+    return jsonify(creneaux_fixes)
 if __name__ == '__main__':
     app.run(debug=True)

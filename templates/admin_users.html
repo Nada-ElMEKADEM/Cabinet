@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Liste des {{ role }}s</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="container mt-4">
+
+  <h1>Liste des {{ role }}s</h1>
+
+  {% if users and users|length > 0 %}
+    <table class="table table-striped table-hover mt-4">
+      <thead class="table-dark">
+        <tr>
+          <th>Nom</th>
+          <th>Prénom</th>
+          <th>Email</th>
+          {% if role == "Médecin" %}
+            <th>Spécialité</th>
+            <th>Horaires</th>
+          {% elif role == "Patient" %}
+            <th>Numéro</th>
+          {% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for user in users %}
+          <tr>
+            <td>{{ user.nom }}</td>
+            <td>{{ user.prenom }}</td>
+            <td>{{ user.email }}</td>
+
+            {% if role == "Médecin" %}
+              <td>{{ user.specialite }}</td>
+              <td>
+                {% for jour, creneaux in user.horaires.items() %}
+                  <div>
+                    <strong>{{ jour.capitalize() }}:</strong>
+                    {% for creneau in creneaux %}
+                      {{ creneau.start }} - {{ creneau.end }}{% if not loop.last %}, {% endif %}
+                    {% endfor %}
+                  </div>
+                {% endfor %}
+              </td>
+            {% elif role == "Patient" %}
+              <td>{{ user.numero }}</td>
+            {% endif %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="alert alert-info mt-4">Aucun {{ role.lower() }} trouvé.</div>
+  {% endif %}
+
+</body>
+</html>

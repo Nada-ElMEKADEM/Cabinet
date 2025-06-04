@@ -1,5 +1,7 @@
 from datetime import datetime
 
+from flask import current_app
+
 from config.database import mongo_db, neo4j_driver
 
 
@@ -97,3 +99,9 @@ def get_patient_by_email(email):
     if patient:
         patient['_id'] = str(patient['_id'])
     return patient
+
+def get_all_medecins(mongo_db):
+    return list(mongo_db.medecins.find())
+
+def get_all_patients(mongo_db):
+    return list(mongo_db.patients.find())

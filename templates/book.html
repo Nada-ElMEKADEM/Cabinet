@@ -15,6 +15,14 @@
 <body>
     <h1>Réserver une consultation</h1>
 
+     {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
     <form method="POST" id="bookingForm">
         <label for="specialite">Choisissez une spécialité :</label>
         <select name="specialite" id="specialite" required>
@@ -29,7 +37,7 @@
             <option value="">Choisissez une spécialité d'abord</option>
         </select>
 
-        <label for="creneau">Créneau horaire disponible :</label>
+        <label for="creneau">Créneau horaire de 2h :</label>
         <select name="creneau" id="creneau" required disabled>
             <option value="">Choisissez un médecin d'abord</option>
         </select>
@@ -75,46 +83,45 @@
                 });
         });
 
-        medecinSelect.addEventListener('change', () => {
-            const medecinId = medecinSelect.value;
-            creneauSelect.innerHTML = '<option>Chargement...</option>';
-            creneauSelect.disabled = true;
+     medecinSelect.addEventListener('change', () => {
+    const medecinId = medecinSelect.value;
+    creneauSelect.innerHTML = '<option>Chargement...</option>';
+    creneauSelect.disabled = true;
 
-            if (!medecinId) {
-                creneauSelect.innerHTML = '<option>Choisissez un médecin d\'abord</option>';
+    if (!medecinId) {
+        creneauSelect.innerHTML = '<option>Choisissez un médecin d\'abord</option>';
+        creneauSelect.disabled = true;
+        return;
+    }
+
+    fetch(`/horaires_fixes?id=${encodeURIComponent(medecinId)}`)
+        .then(res => res.json())
+        .then(data => {
+            creneauSelect.disabled = false;
+            if (Object.keys(data).length === 0) {
+                creneauSelect.innerHTML = '<option>Aucun créneau disponible</option>';
                 creneauSelect.disabled = true;
                 return;
             }
+            creneauSelect.innerHTML = '<option value="">-- Sélectionnez un créneau --</option>';
 
-            fetch(`/horaires_medecin?id=${encodeURIComponent(medecinId)}`)
-                .then(res => res.json())
-                .then(data => {
-                    creneauSelect.disabled = false;
-                    if(Object.keys(data).length === 0){
-                        creneauSelect.innerHTML = '<option>Aucun créneau disponible</option>';
-                        creneauSelect.disabled = true;
-                        return;
+            for (const jour in data) {
+                data[jour].forEach(creneau => {
+                    if (creneau.start && creneau.end) {
+                        const val = `${jour} ${creneau.start} - ${creneau.end}`;
+                        creneauSelect.innerHTML += `<option value="${val}">${val}</option>`;
+                    } else {
+                        console.warn("Créneau mal formé pour", jour, creneau);
                     }
-                    creneauSelect.innerHTML = '<option value="">-- Sélectionnez un créneau --</option>';
-
-                    // data = { lundi: [ {start: '08:00', end: '12:00'}, ... ], ... }
-                    for (const jour in data) {
-    data[jour].forEach(creneau => {
-        if (creneau.start && creneau.end) {
-            const val = `${jour} ${creneau.start} - ${creneau.end}`;
-            creneauSelect.innerHTML += `<option value="${val}">${val}</option>`;
-        } else {
-            console.warn("Créneau mal formé pour", jour, creneau);
-        }
-    });
-}
-
-                })
-                .catch(() => {
-                    creneauSelect.innerHTML = '<option>Erreur lors du chargement</option>';
-                    creneauSelect.disabled = true;
                 });
+            }
+        })
+        .catch(() => {
+            creneauSelect.innerHTML = '<option>Erreur lors du chargement</option>';
+            creneauSelect.disabled = true;
         });
+});
+
     </script>
 </body>
 </html>
