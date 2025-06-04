@@ -180,8 +180,9 @@ def admin():
 
 
 @app.route('/')
-def index():
-    return redirect(url_for('login'))
+def home():
+    return render_template('home.html')
+
 
 
 @app.route('/book', methods=['GET', 'POST'])
