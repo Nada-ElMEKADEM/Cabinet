@@ -230,7 +230,7 @@ def book():
             "date": jour_creneau,
             "heure": heure_debut,
             "heure_fin": heure_fin,
-            "created_at": datetime.datetime.utcnow()
+            "created_at": datetime.utcnow()
         }
         mongo_db.consultations.insert_one(consultation)
 
