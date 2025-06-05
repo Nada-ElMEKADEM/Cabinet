@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Modifier la réservation</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+</head>
+<body>
+  <div class="container mt-4">
+    <h1>Modifier la réservation</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('update_consultation_submit') }}" id="updateForm">
+      <input type="hidden" name="consultation_id" value="{{ consultation._id }}">
+
+      <div class="mb-3">
+        <label for="specialite" class="form-label">Choisissez une spécialité :</label>
+        <select name="specialite" id="specialite" class="form-select" required>
+          <option value="">-- Sélectionnez une spécialité --</option>
+          {% for s in specialites %}
+            <option value="{{ s }}" {% if s == consultation.specialite %}selected{% endif %}>{{ s }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label for="medecin" class="form-label">Médecin disponible :</label>
+        <select name="medecin_id" id="medecin" class="form-select" required disabled>
+          <option value="">Choisissez une spécialité d'abord</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label for="date" class="form-label">Jour :</label>
+        <select name="date" id="date" class="form-select" required disabled>
+          <option value="">Choisissez un médecin d'abord</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label for="heure" class="form-label">Heure de début :</label>
+        <input type="time" id="heure" name="heure" value="{{ consultation.heure }}" class="form-control" required disabled>
+      </div>
+
+      <div class="mb-3">
+        <label for="heure_fin" class="form-label">Heure de fin :</label>
+        <input type="time" id="heure_fin" name="heure_fin" value="{{ consultation.heure_fin }}" class="form-control" required disabled>
+      </div>
+
+      <button type="submit" class="btn btn-primary" id="submitBtn" disabled>Mettre à jour</button>
+    </form>
+  </div>
+
+  <script>
+    const specialiteSelect = document.getElementById('specialite');
+    const medecinSelect = document.getElementById('medecin');
+    const dateSelect = document.getElementById('date');
+    const heureInput = document.getElementById('heure');
+    const heureFinInput = document.getElementById('heure_fin');
+    const submitBtn = document.getElementById('submitBtn');
+
+    // Tous les médecins passés depuis Flask
+    const medecins = {{ medecins | tojson }};
+
+    // Met à jour la liste des médecins selon spécialité
+    function updateMedecins() {
+      const spec = specialiteSelect.value;
+      medecinSelect.innerHTML = '';
+      medecinSelect.disabled = true;
+      dateSelect.innerHTML = '<option>Choisissez un médecin d\'abord</option>';
+      dateSelect.disabled = true;
+      heureInput.value = '';
+      heureFinInput.value = '';
+      heureInput.disabled = true;
+      heureFinInput.disabled = true;
+      submitBtn.disabled = true;
+
+      if (!spec) {
+        medecinSelect.innerHTML = '<option>Choisissez une spécialité d\'abord</option>';
+        return;
+      }
+
+      const filtered = medecins.filter(m => m.specialite === spec);
+      if (filtered.length === 0) {
+        medecinSelect.innerHTML = '<option>Aucun médecin trouvé</option>';
+        return;
+      }
+
+      medecinSelect.innerHTML = '<option value="">-- Sélectionnez un médecin --</option>';
+      filtered.forEach(m => {
+        medecinSelect.innerHTML += `<option value="${m._id}">${m.prenom} ${m.nom}</option>`;
+      });
+      medecinSelect.disabled = false;
+    }
+
+    // Met à jour la liste des jours selon médecin sélectionné (horaires)
+    function updateJours() {
+      const medId = medecinSelect.value;
+      dateSelect.innerHTML = '';
+      dateSelect.disabled = true;
+      heureInput.value = '';
+      heureFinInput.value = '';
+      heureInput.disabled = true;
+      heureFinInput.disabled = true;
+      submitBtn.disabled = true;
+
+      if (!medId) {
+        dateSelect.innerHTML = '<option>Choisissez un médecin d\'abord</option>';
+        return;
+      }
+
+      const medecin = medecins.find(m => m._id === medId);
+      if (!medecin || !medecin.horaires) {
+        dateSelect.innerHTML = '<option>Aucun horaire disponible</option>';
+        return;
+      }
+
+      const jours = Object.keys(medecin.horaires).filter(j => medecin.horaires[j].length > 0);
+      if (jours.length === 0) {
+        dateSelect.innerHTML = '<option>Aucun jour disponible</option>';
+        return;
+      }
+
+      dateSelect.innerHTML = '<option value="">-- Sélectionnez un jour --</option>';
+      jours.forEach(j => {
+        dateSelect.innerHTML += `<option value="${j}">${j.charAt(0).toUpperCase() + j.slice(1)}</option>`;
+      });
+      dateSelect.disabled = false;
+    }
+
+    // Active les inputs heures et vérifie la validité de la plage horaire
+    function enableHeures() {
+      const medId = medecinSelect.value;
+      const jour = dateSelect.value;
+      heureInput.value = '';
+      heureFinInput.value = '';
+      heureInput.disabled = true;
+      heureFinInput.disabled = true;
+      submitBtn.disabled = true;
+
+      if (!medId || !jour) return;
+
+      const medecin = medecins.find(m => m._id === medId);
+      if (!medecin || !medecin.horaires || !medecin.horaires[jour]) return;
+
+      heureInput.disabled = false;
+      heureFinInput.disabled = false;
+      submitBtn.disabled = false;
+    }
+
+    // Initialisation : pré-selection selon consultation existante
+    window.addEventListener('DOMContentLoaded', () => {
+      const specialiteInit = '{{ consultation.specialite|default("") }}';
+      const medecinIdInit = '{{ consultation.medecin_id|default("") }}';
+      const dateInit = '{{ consultation.date|default("") }}';
+      const heureInit = '{{ consultation.heure|default("") }}';
+      const heureFinInit = '{{ consultation.heure_fin|default("") }}';
+
+      if (specialiteInit) {
+        specialiteSelect.value = specialiteInit;
+        updateMedecins();
+
+        // Attendre un petit peu que les options se chargent
+        setTimeout(() => {
+          medecinSelect.value = medecinIdInit;
+          updateJours();
+
+          setTimeout(() => {
+            dateSelect.value = dateInit;
+            enableHeures();
+
+            heureInput.value = heureInit;
+            heureFinInput.value = heureFinInit;
+          }, 200);
+        }, 200);
+      }
+    });
+
+    specialiteSelect.addEventListener('change', () => {
+      updateMedecins();
+    });
+
+    medecinSelect.addEventListener('change', () => {
+      updateJours();
+    });
+
+    dateSelect.addEventListener('change', () => {
+      enableHeures();
+    });
+
+  </script>
+</body>
+</html>

@@ -19,9 +19,15 @@
           {% if role == "Médecin" %}
             <th>Spécialité</th>
             <th>Horaires</th>
+            <th>Actions</th>
           {% elif role == "Patient" %}
             <th>Numéro</th>
+            <th>Actions</th>
+
+
           {% endif %}
+
+
         </tr>
       </thead>
       <tbody>
@@ -42,9 +48,18 @@
                     {% endfor %}
                   </div>
                 {% endfor %}
+                <td>
+            <a href="/medecin/update/{{ user.email }}" class="btn btn-sm btn-warning">📝</a>
+            <a href="/medecin/delete/{{ user.email }}" class="btn btn-sm btn-danger" onclick="return confirm('Supprimer ce médecin ?')">🗑️</a>
+          </td>
+
               </td>
             {% elif role == "Patient" %}
               <td>{{ user.numero }}</td>
+               <td>
+            <a href="{{ url_for('update_patient_form', email=user.email) }}" class="btn btn-sm btn-warning">📝</a>
+            <a href="{{ url_for('delete_patient', email=user.email) }}" class="btn btn-sm btn-danger" onclick="return confirm('Supprimer ce patient ?')">🗑️</a>
+          </td>
             {% endif %}
           </tr>
         {% endfor %}

@@ -29,6 +29,7 @@
                     <th>Heure</th>
                     <th>Médecin</th>
                     <th>Spécialité</th>
+                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -38,6 +39,10 @@
                     <td>{{ c.heure }}</td>
                     <td>{{ c.medecin_nom }}</td>
                     <td>{{ c.specialite }}</td>
+                    <td>
+          <a href="{{ url_for('update_consultation_form', consultation_id=c._id) }}" class="btn btn-sm btn-warning">📝 Modifier</a>
+          <a href="{{ url_for('delete_consultation', consultation_id=c._id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Supprimer cette consultation ?')">🗑️ Supprimer</a>
+        </td>
                 </tr>
                 {% endfor %}
             </tbody>

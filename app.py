@@ -1,7 +1,7 @@
 
 from bson import ObjectId
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
-from config.database import mongo_db
+from config.database import mongo_db, neo4j_driver
 from routes.admin_routes import admin_bp
 from routes.medecin_routes import medecin_bp
 from routes.patient_routes import patient_bp
@@ -167,9 +167,118 @@ def patient_page(email):
         c["heure"] = c.get("heure", "N/A")
         c["medecin_nom"] = c.get("medecin_nom", "N/A")
         c["specialite"] = c.get("specialite", "N/A")
+        c["_id"] = str(c["_id"])
 
     return render_template('patient.html', patient=patient, consultations=consultations)
+from bson import ObjectId
 
+
+@app.route('/consultation/delete/<consultation_id>')
+def delete_consultation(consultation_id):
+    result = mongo_db.consultations.delete_one({"_id": ObjectId(consultation_id)})
+    if result.deleted_count == 1:
+        flash("Consultation supprimée avec succès.", "success")
+    else:
+        flash("Consultation non trouvée.", "danger")
+    return redirect(url_for('patient_page', email=session.get('email')))
+
+
+@app.route('/consultation/update/<consultation_id>', methods=['GET'])
+def update_consultation_form(consultation_id):
+    consultation = mongo_db.consultations.find_one({"_id": ObjectId(consultation_id)})
+    if not consultation:
+        flash("Consultation introuvable", "danger")
+        return redirect(url_for('patient_page', email=session.get('email')))
+
+    consultation["_id"] = str(consultation["_id"])  # Pour utilisation dans le template
+
+    # Liste des spécialités
+    specialites = mongo_db.medecins.distinct("specialite")
+
+    # Optionnel : récupérer tous les médecins pour affichage dans le formulaire
+    medecins = list(mongo_db.medecins.find({}))
+
+    # Convertir ObjectId en str pour le template
+    for med in medecins:
+        med["_id"] = str(med["_id"])
+
+    return render_template(
+        'update_consultation.html',
+        consultation=consultation,
+        specialites=specialites,
+        medecins=medecins
+    )
+
+
+from datetime import datetime, time
+
+@app.route('/consultation/update/submit', methods=['POST'])
+def update_consultation_submit():
+    try:
+        consultation_id = request.form['consultation_id']
+        specialite = request.form["specialite"]
+        medecin_id = request.form["medecin_id"]
+        date = request.form["date"]            # ex: "lundi"
+        heure = request.form["heure"]          # ex: "14:00"
+        heure_fin = request.form["heure_fin"]  # ex: "16:00"
+
+        # Convertir heure et heure_fin en objets time pour comparaison
+        heure_obj = datetime.strptime(heure, "%H:%M").time()
+        heure_fin_obj = datetime.strptime(heure_fin, "%H:%M").time()
+
+        if heure_obj >= heure_fin_obj:
+            flash("L'heure de début doit être inférieure à l'heure de fin.", "danger")
+            return redirect(url_for('update_consultation_form', consultation_id=consultation_id))
+
+        # Trouver le médecin
+        medecin = mongo_db.medecins.find_one({"_id": ObjectId(medecin_id)})
+        if not medecin:
+            flash("Médecin introuvable.", "danger")
+            return redirect(url_for('update_consultation_form', consultation_id=consultation_id))
+
+        # Vérifier que le médecin a bien des horaires définis pour ce jour
+        horaires_jour = medecin.get('horaires', {}).get(date.lower(), [])
+        if not horaires_jour:
+            flash(f"Le médecin n'a pas d'horaires définis pour {date}.", "danger")
+            return redirect(url_for('update_consultation_form', consultation_id=consultation_id))
+
+        # Vérifier que l'horaire demandé est inclus dans au moins un des créneaux du médecin
+        horaire_valide = False
+        for c in horaires_jour:
+            try:
+                start = datetime.strptime(c['start'], "%H:%M").time()
+                end = datetime.strptime(c['end'], "%H:%M").time()
+            except Exception:
+                continue
+            # Vérification que le créneau demandé est dans le créneau du médecin
+            if heure_obj >= start and heure_fin_obj <= end:
+                horaire_valide = True
+                break
+
+        if not horaire_valide:
+            flash(f"L'horaire demandé ({heure} - {heure_fin}) n'est pas disponible pour le médecin ce jour.", "danger")
+            return redirect(url_for('update_consultation_form', consultation_id=consultation_id))
+
+        medecin_nom = f"{medecin.get('prenom', '')} {medecin.get('nom', '')}".strip()
+
+        updated_data = {
+            "specialite": specialite,
+            "medecin_id": medecin_id,
+            "medecin_nom": medecin_nom,
+            "date": date,
+            "heure": heure,
+            "heure_fin": heure_fin,
+        }
+
+        mongo_db.consultations.update_one(
+            {"_id": ObjectId(consultation_id)},
+            {"$set": updated_data}
+        )
+        flash("Consultation mise à jour avec succès", "success")
+        return redirect(url_for('patient_page', email=session.get('email')))
+    except Exception as e:
+        flash(f"Erreur lors de la mise à jour : {str(e)}", "danger")
+        return redirect(url_for('patient_page', email=session.get('email')))
 
 @app.route('/admin')
 def admin():
@@ -318,5 +427,161 @@ def horaires_fixes():
             creneaux_fixes[jour] = decoupes
 
     return jsonify(creneaux_fixes)
+@app.route("/medecin/delete/<email>")
+def delete_medecin(email):
+    try:
+        medecin = mongo_db.medecins.find_one({"email": email})
+        if medecin:
+            mongo_db.medecins.delete_one({"email": email})
+            medecin_id = str(medecin["_id"])
+            with neo4j_driver.session() as session:
+                session.run("MATCH (m:Medecin {id: $id}) DETACH DELETE m", id=medecin_id)
+        return redirect(url_for("admin.liste_medecins"))
+
+    except Exception as e:
+        return str(e), 500
+
+@app.route("/medecin/update/<email>")
+def update_medecin_form(email):
+    medecin = get_medecin_by_email(email)
+    if not medecin:
+        return "Médecin introuvable", 404
+    return render_template("update_medecin.html", medecin=medecin)
+
+from flask import request, redirect, url_for
+from collections import defaultdict
+
+
+@app.route("/medecin/update/submit", methods=["POST"])
+def update_medecin_submit():
+    try:
+        email = request.form["email"]
+
+        # Préparation des données de base
+        updated_data = {
+            "nom": request.form["nom"],
+            "prenom": request.form["prenom"],
+            "specialite": request.form["specialite"]
+        }
+
+        # Traitement des horaires
+        horaires = {}
+        for key in request.form:
+            if key.startswith("horaires["):
+                parts = key[9:-1].split("][")
+                if len(parts) != 3:
+                    continue
+
+                jour, index, field = parts
+                if jour not in horaires:
+                    horaires[jour] = {}
+                if index not in horaires[jour]:
+                    horaires[jour][index] = {}
+
+                horaires[jour][index][field] = request.form[key]
+
+        # Conversion en format final (en filtrant les créneaux vides)
+        horaires_final = {}
+        for jour in horaires:
+            horaires_final[jour] = []
+            for index in horaires[jour]:
+                start = horaires[jour][index].get("start", "").strip()
+                end = horaires[jour][index].get("end", "").strip()
+
+                if start and end:  # Ne garder que les créneaux valides
+                    horaires_final[jour].append({
+                        "start": start,
+                        "end": end
+                    })
+
+        # Mise à jour MongoDB
+        mongo_db.medecins.update_one(
+            {"email": email},
+            {
+                "$set": {
+                    **updated_data,
+                    "horaires": horaires_final
+                }
+            }
+        )
+
+        # Mise à jour Neo4j (inchangée)
+        medecin = mongo_db.medecins.find_one({"email": email})
+        medecin_id = str(medecin["_id"])
+
+        with neo4j_driver.session() as session:
+            session.run("""
+                MATCH (m:Medecin {id: $id})
+                SET m.nom = $nom,
+                    m.prenom = $prenom,
+                    m.email = $email,
+                    m.specialite = $specialite
+            """, id=medecin_id,
+                        nom=updated_data["nom"],
+                        prenom=updated_data["prenom"],
+                        email=email,
+                        specialite=updated_data["specialite"])
+
+        return redirect(url_for("admin.liste_medecins"))
+
+    except Exception as e:
+        return f"Erreur lors de la mise à jour : {str(e)}", 500
+
+
+
+@app.route("/patient/update/<email>")
+def update_patient_form(email):
+    patient = get_patient_by_email(email)
+    if not patient:
+        return "Patient introuvable", 404
+    return render_template("update_patient.html", patient=patient)
+@app.route("/patient/update/submit", methods=["POST"])
+def update_patient_submit():
+    try:
+        email = request.form["email"]
+        updated_data = {
+            "nom": request.form["nom"],
+            "prenom": request.form["prenom"],
+            "email": email,
+            "numero": request.form["numero"]
+        }
+
+        # MongoDB
+        mongo_db.patients.update_one({"email": email}, {"$set": updated_data})
+
+        # Neo4j
+        patient = mongo_db.patients.find_one({"email": email})
+        patient_id = str(patient["_id"])
+
+        with neo4j_driver.session() as session:
+            session.run("""
+                MATCH (p:Patient {id: $id})
+                SET p.nom = $nom, p.prenom = $prenom, p.email = $email, p.numero = $numero
+            """, id=patient_id, nom=updated_data["nom"], prenom=updated_data["prenom"],
+                 email=email, numero=updated_data["numero"])
+
+        return redirect(url_for("admin.liste_patients"))
+
+    except Exception as e:
+        return f"Erreur lors de la mise à jour : {str(e)}", 500
+@app.route("/patient/delete/<email>")
+def delete_patient(email):
+    try:
+        # MongoDB
+        patient = mongo_db.patients.find_one({"email": email})
+        if not patient:
+            return "Patient introuvable", 404
+        mongo_db.patients.delete_one({"email": email})
+
+        # Neo4j
+        patient_id = str(patient["_id"])
+        with neo4j_driver.session() as session:
+            session.run("MATCH (p:Patient {id: $id}) DETACH DELETE p", id=patient_id)
+
+        return redirect(url_for("admin.liste_patients"))
+
+    except Exception as e:
+        return f"Erreur lors de la suppression : {str(e)}", 500
+
 if __name__ == '__main__':
     app.run(debug=True)
