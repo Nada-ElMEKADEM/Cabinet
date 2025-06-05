@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profil Medecin</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+            min-height: 100vh;
+            padding: 20px;
+            color: #334155;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .profile-header {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e2e8f0;
+        }
+
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .profile-avatar:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(100, 116, 139, 0.2);
+        }
+
+        .profile-avatar i {
+            font-size: 40px;
+            color: white;
+        }
+
+        .profile-title {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .profile-title h1 {
+            color: #1e293b;
+            font-size: 2em;
+            font-weight: 600;
+            margin-bottom: 8px;
+            letter-spacing: -0.025em;
+        }
+
+        .profile-subtitle {
+            color: #64748b;
+            font-size: 1em;
+            font-weight: 400;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            background: #dcfce7;
+            color: #166534;
+            border-radius: 24px;
+            font-size: 0.875em;
+            font-weight: 500;
+            margin-top: 16px;
+            border: 1px solid #bbf7d0;
+        }
+
+        .profile-info {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e2e8f0;
+        }
+
+        .section-title {
+            font-size: 1.25em;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 24px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #f1f5f9;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .info-item {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 24px;
+            transition: all 0.2s ease;
+            border: 1px solid #e2e8f0;
+            position: relative;
+        }
+
+        .info-item:hover {
+            background: #f1f5f9;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .info-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .info-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: #475569;
+            background: white;
+            border: 1px solid #e2e8f0;
+        }
+
+        .info-label {
+            font-size: 0.875em;
+            color: #64748b;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .info-value {
+            font-size: 1.125em;
+            color: #1e293b;
+            font-weight: 600;
+            word-break: break-word;
+            line-height: 1.4;
+        }
+
+        .action-section {
+            border-top: 1px solid #e2e8f0;
+            padding-top: 32px;
+            margin-top: 32px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            flex: 1;
+            min-width: 160px;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.875em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            text-align: center;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: #1e293b;
+            color: white;
+            border: 1px solid #1e293b;
+        }
+
+        .btn-primary:hover {
+            background: #334155;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(30, 41, 59, 0.2);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #1e293b;
+            border: 1px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+            padding: 24px;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #1e293b;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.75em;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 4px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 10px;
+            }
+
+            .profile-header,
+            .profile-info {
+                padding: 24px;
+            }
+
+            .profile-title h1 {
+                font-size: 1.75em;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                min-width: auto;
+            }
+
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+{% extends "base.html" %}
+
+{% block title %}Accueil Médecin{% endblock %}
+
+{% block content %}
+<body>
+    <div class="container">
+        <div class="profile-header">
+            <div class="profile-avatar">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="profile-title">
+                <h1>Profil Médecin</h1>
+                <p class="profile-subtitle">Informations personnelles et médicales</p>
+                <span class="status-badge">
+                    <i class="fas fa-check-circle"></i>
+                    Compte Vérifié
+                </span>
+            </div>
+        </div>
+
+        <div class="profile-info">
+            <div class="stats-row">
+                <div class="stat-item">
+                    <span class="stat-number">12</span>
+                    <span class="stat-label">Consultations</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">3</span>
+                    <span class="stat-label">RDV à venir</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">2</span>
+                    <span class="stat-label">Années</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">98%</span>
+                    <span class="stat-label">Satisfaction</span>
+                </div>
+            </div>
+
+            <h2 class="section-title">Informations Personnelles</h2>
+
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-header">
+                        <div class="info-icon">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="info-label">Nom de famille</div>
+                    </div>
+                    <div class="info-value">{{medecin.nom}}</div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-header">
+                        <div class="info-icon">
+                            <i class="fas fa-id-card"></i>
+                        </div>
+                        <div class="info-label">Prénom</div>
+                    </div>
+                    <div class="info-value">{{medecin.prenom}}</div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-header">
+                        <div class="info-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="info-label">Adresse e-mail</div>
+                    </div>
+                    <div class="info-value">{{medecin.email}}</div>
+                </div>
+                 <div class="info-item">
+                    <div class="info-header">
+                        <div class="info-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="info-label">Spécialité</div>
+                    </div>
+                    <div class="info-value">{{medecin.specialite}}</div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-header">
+                        <div class="info-icon">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                        <div class="info-label">Horaire</div>
+                    </div>
+                    <div class="info-value">{{medecin.horaires}}</div>
+                </div>
+            </div>
+
+            <div class="action-section">
+                <div class="action-buttons">
+                    <button class="btn btn-primary">
+                        <i class="fas fa-edit"></i>
+                        <a href="{{ url_for('modifier_profil_medecin') }}" class="btn btn-primary">Modifier le profil</a>
+
+                    </button>
+                    <button class="btn btn-secondary">
+                        <i class="fas fa-calendar-alt"></i>
+                        <a href="{{ url_for('medecin.voir_consultations' )}}" >Mes consultations</a>
+                    </button>
+                    <button class="btn btn-secondary">
+                        <i class="fas fa-file-medical"></i>
+                        Ajouter Dossier médical
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+{% endblock %}

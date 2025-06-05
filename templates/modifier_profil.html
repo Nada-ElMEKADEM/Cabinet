@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modifier Profil</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+            min-height: 100vh;
+            padding: 20px;
+            color: #334155;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .form-header {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+            text-align: center;
+        }
+
+        .form-header h2 {
+            color: #1e293b;
+            font-size: 1.875em;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .form-header p {
+            color: #64748b;
+            font-size: 1em;
+        }
+
+        .success-message {
+            background: #dcfce7;
+            color: #166534;
+            padding: 16px 20px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            border: 1px solid #bbf7d0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-container {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+        }
+
+        .avatar-section {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .avatar-container {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 16px;
+        }
+
+        .avatar-preview {
+            width: 120px;
+            height: 120px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            border: 3px solid white;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .avatar-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 17px;
+        }
+
+        .avatar-preview i {
+            font-size: 40px;
+            color: white;
+        }
+
+        .avatar-upload {
+            position: absolute;
+            bottom: -5px;
+            right: -5px;
+            width: 40px;
+            height: 40px;
+            background: #1e293b;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 3px solid white;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .avatar-upload:hover {
+            background: #334155;
+            transform: scale(1.05);
+        }
+
+        .avatar-upload i {
+            color: white;
+            font-size: 16px;
+        }
+
+        .avatar-upload input {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .avatar-label {
+            color: #64748b;
+            font-size: 0.875em;
+            margin-top: 8px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-label {
+            font-size: 0.875em;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-label i {
+            color: #64748b;
+            width: 16px;
+        }
+
+        .form-input {
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: all 0.2s ease;
+            background: white;
+            font-family: inherit;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #1e293b;
+            box-shadow: 0 0 0 3px rgba(30, 41, 59, 0.1);
+        }
+
+        .form-input:hover {
+            border-color: #9ca3af;
+        }
+
+        .password-group {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #64748b;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: color 0.2s ease;
+        }
+
+        .password-toggle:hover {
+            color: #374151;
+        }
+
+        .password-strength {
+            margin-top: 8px;
+            font-size: 0.75em;
+        }
+
+        .strength-bar {
+            height: 3px;
+            background: #e5e7eb;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+
+        .strength-fill {
+            height: 100%;
+            transition: all 0.3s ease;
+            border-radius: 2px;
+        }
+
+        .strength-weak { width: 25%; background: #ef4444; }
+        .strength-fair { width: 50%; background: #f59e0b; }
+        .strength-good { width: 75%; background: #10b981; }
+        .strength-strong { width: 100%; background: #059669; }
+
+        .form-actions {
+            display: flex;
+            gap: 16px;
+            justify-content: flex-end;
+            padding-top: 24px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.875em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: inherit;
+            min-width: 120px;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: #1e293b;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #334155;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(30, 41, 59, 0.2);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #64748b;
+            border: 1px solid #d1d5db;
+        }
+
+        .btn-secondary:hover {
+            background: #f8fafc;
+            border-color: #9ca3af;
+            transform: translateY(-1px);
+        }
+
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #b91c1c;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+        }
+
+        .security-section {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 24px;
+            margin-top: 32px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .security-title {
+            font-size: 1.125em;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .security-info {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 0.875em;
+            margin-bottom: 16px;
+            border: 1px solid #fde68a;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 10px;
+            }
+
+            .form-container {
+                padding: 24px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="form-header">
+            <h2>
+                <i class="fas fa-user-edit"></i>
+                Modifier le profil
+            </h2>
+            <p>Modifiez vos informations personnelles et paramètres de sécurité</p>
+        </div>
+
+        <!-- Message de succès (à afficher conditionnellement) -->
+        <div class="success-message" style="display: none;" id="successMessage">
+            <i class="fas fa-check-circle"></i>
+            <span>Profil mis à jour avec succès !</span>
+        </div>
+
+        <div class="form-container">
+            <form method="POST" enctype="multipart/form-data">
+                <!-- Section Avatar -->
+                <div class="avatar-section">
+                    <div class="avatar-container">
+                        <div class="avatar-preview" id="avatarPreview">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="avatar-upload">
+                            <input type="file" name="avatar" id="avatarInput" accept="image/*">
+                            <i class="fas fa-camera"></i>
+                        </div>
+                    </div>
+                    <div class="avatar-label">Cliquez pour changer votre photo de profil</div>
+                </div>
+
+                <!-- Informations personnelles -->
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="nom" class="form-label">
+                            <i class="fas fa-user"></i>
+                            Nom
+                        </label>
+                        <input type="text" class="form-input" name="nom" id="nom" value="{{patient.nom}}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="prenom" class="form-label">
+                            <i class="fas fa-id-card"></i>
+                            Prénom
+                        </label>
+                        <input type="text" class="form-input" name="prenom" id="prenom" value="{{patient.prenom}}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email" class="form-label">
+                            <i class="fas fa-envelope"></i>
+                            Email
+                        </label>
+                        <input type="email" class="form-input" name="email" id="email" value="{{patient.email}}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="numero" class="form-label">
+                            <i class="fas fa-phone"></i>
+                            Numéro de téléphone
+                        </label>
+                        <input type="tel" class="form-input" name="numero" id="numero" value="{{patient.numero}}">
+                    </div>
+                </div>
+
+                <!-- Section Sécurité -->
+                <div class="security-section">
+                    <h3 class="security-title">
+                        <i class="fas fa-shield-alt"></i>
+                        Sécurité
+                    </h3>
+                    
+                    <div class="security-info">
+                        <i class="fas fa-info-circle"></i>
+                        Laissez les champs vides si vous ne souhaitez pas changer votre mot de passe
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="current_password" class="form-label">
+                                <i class="fas fa-lock"></i>
+                                Mot de passe actuel
+                            </label>
+                            <div class="password-group">
+                                <input type="password" class="form-input" name="current_password" id="current_password">
+                                <button type="button" class="password-toggle" onclick="togglePassword('current_password')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="new_password" class="form-label">
+                                <i class="fas fa-key"></i>
+                                Nouveau mot de passe
+                            </label>
+                            <div class="password-group">
+                                <input type="password" class="form-input" name="new_password" id="new_password" oninput="checkPasswordStrength()">
+                                <button type="button" class="password-toggle" onclick="togglePassword('new_password')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <div class="password-strength" id="passwordStrength" style="display: none;">
+                                <div class="strength-bar">
+                                    <div class="strength-fill" id="strengthBar"></div>
+                                </div>
+                                <span id="strengthText"></span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="confirm_password" class="form-label">
+                                <i class="fas fa-check-circle"></i>
+                                Confirmer le mot de passe
+                            </label>
+                            <div class="password-group">
+                                <input type="password" class="form-input" name="confirm_password" id="confirm_password" oninput="checkPasswordMatch()">
+                                <button type="button" class="password-toggle" onclick="togglePassword('confirm_password')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <div id="passwordMatch" style="font-size: 0.75em; margin-top: 4px;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="form-actions">
+                    <a href="#" class="btn btn-secondary">
+                        <i class="fas fa-times"></i>
+                        Annuler
+                    </a>
+                    <button type="button" class="btn btn-danger" onclick="confirmDelete()">
+                        <i class="fas fa-trash"></i>
+                        Supprimer le compte
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        Enregistrer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Preview de l'avatar
+        document.getElementById('avatarInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('avatarPreview');
+                    preview.innerHTML = `<img src="${e.target.result}" alt="Avatar">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Toggle password visibility
+        function togglePassword(fieldId) {
+            const field = document.getElementById(fieldId);
+            const button = field.nextElementSibling;
+            const icon = button.querySelector('i');
+            
+            if (field.type === 'password') {
+                field.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                field.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        // Vérifier la force du mot de passe
+        function checkPasswordStrength() {
+            const password = document.getElementById('new_password').value;
+            const strengthDiv = document.getElementById('passwordStrength');
+            const strengthBar = document.getElementById('strengthBar');
+            const strengthText = document.getElementById('strengthText');
+
+            if (password.length === 0) {
+                strengthDiv.style.display = 'none';
+                return;
+            }
+
+            strengthDiv.style.display = 'block';
+
+            let strength = 0;
+            let text = 'Très faible';
+            let className = 'strength-weak';
+
+            // Critères de force
+            if (password.length >= 8) strength++;
+            if (/[a-z]/.test(password)) strength++;
+            if (/[A-Z]/.test(password)) strength++;
+            if (/[0-9]/.test(password)) strength++;
+            if (/[^A-Za-z0-9]/.test(password)) strength++;
+
+            switch (strength) {
+                case 0:
+                case 1:
+                    text = 'Très faible';
+                    className = 'strength-weak';
+                    break;
+                case 2:
+                    text = 'Faible';
+                    className = 'strength-fair';
+                    break;
+                case 3:
+                case 4:
+                    text = 'Moyen';
+                    className = 'strength-good';
+                    break;
+                case 5:
+                    text = 'Fort';
+                    className = 'strength-strong';
+                    break;
+            }
+
+            strengthBar.className = `strength-fill ${className}`;
+            strengthText.textContent = text;
+        }
+
+        // Vérifier la correspondance des mots de passe
+        function checkPasswordMatch() {
+            const newPassword = document.getElementById('new_password').value;
+            const confirmPassword = document.getElementById('confirm_password').value;
+            const matchDiv = document.getElementById('passwordMatch');
+
+            if (confirmPassword.length === 0) {
+                matchDiv.textContent = '';
+                return;
+            }
+
+            if (newPassword === confirmPassword) {
+                matchDiv.textContent = '✓ Les mots de passe correspondent';
+                matchDiv.style.color = '#059669';
+            } else {
+                matchDiv.textContent = '✗ Les mots de passe ne correspondent pas';
+                matchDiv.style.color = '#dc2626';
+            }
+        }
+
+        // Confirmation de suppression
+        function confirmDelete() {
+            if (confirm('Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.')) {
+                // Ici, vous pouvez ajouter la logique de suppression
+                alert('Fonctionnalité de suppression à implémenter');
+            }
+        }
+
+        // Simuler un message de succès (à remplacer par votre logique backend)
+        function showSuccessMessage() {
+            document.getElementById('successMessage').style.display = 'flex';
+            setTimeout(() => {
+                document.getElementById('successMessage').style.display = 'none';
+            }, 5000);
+        }
+
+        // Exemple d'utilisation après soumission réussie
+        // showSuccessMessage();
+    </script>
+</body>
+</html>

@@ -2,71 +2,430 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>Liste des {{ role }}s</title>
+  <title>Liste des Médecins</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    /* Variables CSS cohérentes avec le thème de login */
+    :root {
+      --primary-color: #2d3748;
+      --secondary-color: #4a5568;
+      --accent-color: #e2e8f0;
+      --text-primary: #1a202c;
+      --text-secondary: #718096;
+      --background-light: #f7fafc;
+      --white: #ffffff;
+      --shadow-light: rgba(0, 0, 0, 0.05);
+      --shadow-medium: rgba(0, 0, 0, 0.1);
+      --border-color: #e2e8f0;
+      --error-color: #e53e3e;
+      --success-color: #38a169;
+      --warning-color: #d69e2e;
+      --transition: all 0.3s ease;
+    }
+
+    /* Reset et base */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, var(--background-light) 0%, rgba(226, 232, 240, 0.3) 100%);
+      min-height: 100vh;
+      color: var(--text-primary);
+      line-height: 1.6;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('data:image/svg+xml,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g fill="%23e2e8f0" fill-opacity="0.08"><circle cx="30" cy="30" r="1"/></g></svg>');
+      opacity: 0.5;
+      z-index: -1;
+    }
+
+    .container {
+      max-width: 1200px;
+      padding: 2rem 1rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Titre principal */
+    h1 {
+      font-weight: 700;
+      font-size: 2.5rem;
+      color: var(--primary-color);
+      margin-bottom: 2.5rem;
+      text-align: center;
+      position: relative;
+      padding-bottom: 1rem;
+      letter-spacing: -0.025em;
+    }
+
+    h1::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+      border-radius: 2px;
+    }
+
+    /* Conteneur du tableau */
+    .table-container {
+      background: var(--white);
+      border-radius: 24px;
+      box-shadow: 0 20px 40px var(--shadow-light);
+      border: 1px solid var(--border-color);
+      overflow: hidden;
+      transition: var(--transition);
+      backdrop-filter: blur(20px);
+      position: relative;
+      z-index: 2;
+    }
+
+    .table-container:hover {
+      box-shadow: 0 25px 50px var(--shadow-medium);
+      transform: translateY(-2px);
+    }
+
+    /* Table styling */
+    .table {
+      margin-bottom: 0;
+      font-size: 0.95rem;
+    }
+
+    .table thead th {
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      color: var(--white);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-size: 0.85rem;
+      padding: 1.5rem 1.25rem;
+      border: none;
+      position: relative;
+    }
+
+    .table thead th:first-child {
+      border-top-left-radius: 24px;
+    }
+
+    .table thead th:last-child {
+      border-top-right-radius: 24px;
+    }
+
+    .table tbody tr {
+      transition: var(--transition);
+      border-bottom: 1px solid var(--accent-color);
+    }
+
+    .table tbody tr:hover {
+      background-color: rgba(226, 232, 240, 0.1);
+      transform: translateY(-1px);
+    }
+
+    .table tbody tr:last-child {
+      border-bottom: none;
+    }
+
+    .table td {
+      padding: 1.25rem;
+      vertical-align: middle;
+      border: none;
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    /* Horaires styling */
+    .horaires-container {
+      max-width: 300px;
+    }
+
+    .horaire-jour {
+      margin-bottom: 0.5rem;
+      padding: 0.75rem 1rem;
+      background: rgba(226, 232, 240, 0.15);
+      border-radius: 12px;
+      border-left: 4px solid var(--primary-color);
+      transition: var(--transition);
+    }
+
+    .horaire-jour:hover {
+      background: rgba(226, 232, 240, 0.25);
+      transform: translateX(2px);
+    }
+
+    .horaire-jour:last-child {
+      margin-bottom: 0;
+    }
+
+    .jour-label {
+      font-weight: 600;
+      color: var(--primary-color);
+      font-size: 0.85rem;
+      text-transform: capitalize;
+      letter-spacing: 0.025em;
+    }
+
+    .creneaux {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin-top: 0.25rem;
+      font-weight: 500;
+    }
+
+    /* Boutons d'action */
+    .btn-action {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 0.25rem;
+      font-size: 1rem;
+      transition: var(--transition);
+      text-decoration: none;
+      color: var(--white);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-action::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .btn-action:hover::before {
+      left: 100%;
+    }
+
+    .btn-edit {
+      background: var(--warning-color);
+      box-shadow: 0 4px 12px rgba(214, 158, 46, 0.3);
+    }
+
+    .btn-edit:hover {
+      background: #b7791f;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(214, 158, 46, 0.4);
+      color: var(--white);
+    }
+
+    .btn-delete {
+      background: var(--error-color);
+      box-shadow: 0 4px 12px rgba(229, 62, 62, 0.3);
+    }
+
+    .btn-delete:hover {
+      background: #c53030;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(229, 62, 62, 0.4);
+      color: var(--white);
+    }
+
+    .btn-action:active {
+      transform: translateY(0);
+    }
+
+    /* Alert styling */
+    .alert-custom {
+      background: var(--white);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      box-shadow: 0 20px 40px var(--shadow-light);
+      color: var(--text-secondary);
+      padding: 3rem 2rem;
+      text-align: center;
+      border-left: 4px solid var(--primary-color);
+      backdrop-filter: blur(20px);
+      font-weight: 500;
+    }
+
+    .alert-custom::before {
+      content: "ℹ️";
+      font-size: 3rem;
+      display: block;
+      margin-bottom: 1rem;
+      opacity: 0.7;
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+      .container {
+        padding: 1rem 0.5rem;
+      }
+
+      h1 {
+        font-size: 2rem;
+      }
+
+      .table-container {
+        border-radius: 16px;
+        margin: 0 -0.5rem;
+      }
+
+      .table {
+        font-size: 0.85rem;
+      }
+
+      .table td, .table th {
+        padding: 1rem 0.75rem;
+      }
+
+      .table thead th:first-child {
+        border-top-left-radius: 16px;
+      }
+
+      .table thead th:last-child {
+        border-top-right-radius: 16px;
+      }
+
+      .horaires-container {
+        max-width: 250px;
+      }
+
+      .btn-action {
+        width: 36px;
+        height: 36px;
+        font-size: 0.9rem;
+      }
+
+      .alert-custom {
+        border-radius: 16px;
+        padding: 2rem 1.5rem;
+      }
+    }
+
+    /* Animation d'entrée */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .table-container, .alert-custom {
+      animation: fadeInUp 0.6s ease-out;
+    }
+
+    h1 {
+      animation: fadeInUp 0.6s ease-out 0.2s both;
+    }
+
+    /* Loading state pour les boutons */
+    .btn-action.loading {
+      pointer-events: none;
+      opacity: 0.8;
+    }
+
+    .btn-action.loading::after {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      border: 2px solid transparent;
+      border-top: 2px solid white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    @keyframes spin {
+      0% { transform: translate(-50%, -50%) rotate(0deg); }
+      100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+  </style>
 </head>
 <body class="container mt-4">
 
   <h1>Liste des {{ role }}s</h1>
 
   {% if users and users|length > 0 %}
-    <table class="table table-striped table-hover mt-4">
-      <thead class="table-dark">
-        <tr>
-          <th>Nom</th>
-          <th>Prénom</th>
-          <th>Email</th>
-          {% if role == "Médecin" %}
-            <th>Spécialité</th>
-            <th>Horaires</th>
-            <th>Actions</th>
-          {% elif role == "Patient" %}
-            <th>Numéro</th>
-            <th>Actions</th>
-
-
-          {% endif %}
-
-
-        </tr>
-      </thead>
-      <tbody>
-        {% for user in users %}
+    <div class="table-container">
+      <table class="table">
+        <thead>
           <tr>
-            <td>{{ user.nom }}</td>
-            <td>{{ user.prenom }}</td>
-            <td>{{ user.email }}</td>
-
+            <th>Nom</th>
+            <th>Prénom</th>
+            <th>Email</th>
             {% if role == "Médecin" %}
-              <td>{{ user.specialite }}</td>
-              <td>
-                {% for jour, creneaux in user.horaires.items() %}
-                  <div>
-                    <strong>{{ jour.capitalize() }}:</strong>
-                    {% for creneau in creneaux %}
-                      {{ creneau.start }} - {{ creneau.end }}{% if not loop.last %}, {% endif %}
-                    {% endfor %}
-                  </div>
-                {% endfor %}
-                <td>
-            <a href="/medecin/update/{{ user.email }}" class="btn btn-sm btn-warning">📝</a>
-            <a href="/medecin/delete/{{ user.email }}" class="btn btn-sm btn-danger" onclick="return confirm('Supprimer ce médecin ?')">🗑️</a>
-          </td>
-
-              </td>
+              <th>Spécialité</th>
+              <th>Horaires</th>
+              <th>Actions</th>
             {% elif role == "Patient" %}
-              <td>{{ user.numero }}</td>
-               <td>
-            <a href="{{ url_for('update_patient_form', email=user.email) }}" class="btn btn-sm btn-warning">📝</a>
-            <a href="{{ url_for('delete_patient', email=user.email) }}" class="btn btn-sm btn-danger" onclick="return confirm('Supprimer ce patient ?')">🗑️</a>
-          </td>
+              <th>Numéro</th>
+              <th>Actions</th>
             {% endif %}
           </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {% for user in users %}
+            <tr>
+              <td>{{ user.nom }}</td>
+              <td>{{ user.prenom }}</td>
+              <td>{{ user.email }}</td>
+
+              {% if role == "Médecin" %}
+                <td>{{ user.specialite }}</td>
+                <td>
+                  <div class="horaires-container">
+                    {% for jour, creneaux in user.horaires.items() %}
+                      <div class="horaire-jour">
+                        <div class="jour-label">{{ jour.capitalize() }}</div>
+                        <div class="creneaux">
+                          {% for creneau in creneaux %}
+                            {{ creneau.start }} - {{ creneau.end }}{% if not loop.last %}, {% endif %}
+                          {% endfor %}
+                        </div>
+                      </div>
+                    {% endfor %}
+                  </div>
+                </td>
+                <td>
+                  <a href="/medecin/update/{{ user.email }}" class="btn-action btn-edit">📝</a>
+                  <a href="/medecin/delete/{{ user.email }}" class="btn-action btn-delete" onclick="return confirm('Supprimer ce médecin ?')">🗑️</a>
+                </td>
+              {% elif role == "Patient" %}
+                <td>{{ user.numero }}</td>
+                <td>
+                  <a href="{{ url_for('update_patient_form', email=user.email) }}" class="btn-action btn-edit">📝</a>
+                  <a href="{{ url_for('delete_patient', email=user.email) }}" class="btn-action btn-delete" onclick="return confirm('Supprimer ce patient ?')">🗑️</a>
+                </td>
+              {% endif %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   {% else %}
-    <div class="alert alert-info mt-4">Aucun {{ role.lower() }} trouvé.</div>
+    <div class="alert-custom mt-4">Aucun {{ role.lower() }} trouvé.</div>
   {% endif %}
 
 </body>

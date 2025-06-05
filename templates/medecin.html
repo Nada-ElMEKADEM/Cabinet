@@ -1,12 +1,20 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8" />
-  <title>Medecin</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body class="container mt-5">
-<a href="{{ url_for('medecin.voir_consultations') }}">Voir mes consultations</a>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}Accueil Médecin{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Bienvenue, Dr {{ medecin.nom }}</h2>
+
+
+
+
+            <div class="mt-4">
+                <a href="{{ url_for('medecin.voir_consultations') }}" class="btn btn-primary">
+                    Voir mes consultations
+                </a>
+            </div>
+        </div>
+
+
+{% endblock %}

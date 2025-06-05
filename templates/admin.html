@@ -4,44 +4,227 @@
     <meta charset="UTF-8">
     <title>Dashboard Admin</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 800px; margin: auto; padding: 20px; }
-        h1 { color: #333; }
-        .menu { margin-bottom: 20px; }
-        .menu a {
-            display: inline-block;
-            margin-right: 15px;
-            padding: 10px 15px;
-            background-color: #007BFF;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .menu a:hover {
-            background-color: #0056b3;
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            color: #2c3e50;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 300;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            color: #6c757d;
+            font-size: 1.1rem;
+            margin-bottom: 40px;
+            font-weight: 300;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+            border: 1px solid #e9ecef;
+        }
+
+        .menu {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .menu-item {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            text-decoration: none;
+            color: #2c3e50;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .menu-item:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, #495057, #6c757d);
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+
+        .menu-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            border-color: #dee2e6;
+        }
+
+        .menu-item:hover:before {
+            transform: translateX(0);
+        }
+
+        .menu-item h3 {
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+
+        .menu-item p {
+            font-size: 0.9rem;
+            color: #6c757d;
+            font-weight: 300;
+        }
+
+        .content-section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+            border: 1px solid #e9ecef;
+        }
+
+        .content-section h2 {
+            font-size: 1.8rem;
+            font-weight: 400;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f8f9fa;
+        }
+
+        .user-list {
+            list-style: none;
+        }
+
+        .user-list li {
+            padding: 15px 0;
+            border-bottom: 1px solid #f8f9fa;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+
+        .user-list li:hover {
+            background-color: #f8f9fa;
+            margin: 0 -15px;
+            padding-left: 15px;
+            padding-right: 15px;
+            border-radius: 6px;
+        }
+
+        .user-list li:last-child {
+            border-bottom: none;
+        }
+
+        .user-info {
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        .user-email {
+            font-size: 0.9rem;
+            color: #6c757d;
+            font-weight: 300;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+
+        .empty-state .icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        .empty-state p {
+            font-size: 1.1rem;
+            font-weight: 300;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 15px;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .menu {
+                grid-template-columns: 1fr;
+            }
+
+            .header,
+            .content-section {
+                padding: 20px;
+            }
         }
     </style>
 </head>
 <body>
+    <div class="container">
+        <div class="header">
+            <h1>Bienvenue, Admin</h1>
+            <p class="subtitle">Gérez votre système de santé en toute simplicité</p>
+        </div>
 
-    <h1>Bienvenue, Admin</h1>
+        <div class="menu">
+            <a href="/admin/add-user" class="menu-item">
+                <h3>Ajouter un utilisateur</h3>
+                <p>Créer de nouveaux comptes médecins ou patients</p>
+            </a>
+            <a href="/admin/medecins" class="menu-item">
+                <h3>Voir les médecins</h3>
+                <p>Consulter la liste complète des praticiens</p>
+            </a>
+            <a href="/admin/patients" class="menu-item">
+                <h3>Voir les patients</h3>
+                <p>Accéder au répertoire des patients</p>
+            </a>
+        </div>
 
-    <div class="menu">
-        <a href="/admin/add-user">Ajouter un utilisateur</a>
-        <a href="/admin/medecins">Voir les médecins</a>
-        <a href="/admin/patients">Voir les patients</a>
+
+
+        <!-- Exemple d'état vide -->
+        <!--
+        <div class="content-section">
+            <div class="empty-state">
+                <div class="icon">👥</div>
+                <p>Aucun utilisateur trouvé</p>
+            </div>
+        </div>
+        -->
     </div>
-
-    <!-- Le contenu dynamique s'affiche ici selon ce que l'admin choisit -->
-    {% if role and users %}
-        <h2>Liste des {{ role }}s</h2>
-        <ul>
-            {% for user in users %}
-                <li>{{ user.nom }} {{ user.prenom }} - {{ user.email }}</li>
-            {% endfor %}
-        </ul>
-    {% elif role %}
-        <p>Aucun {{ role }} trouvé.</p>
-    {% endif %}
-
 </body>
 </html>

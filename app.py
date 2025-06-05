@@ -50,8 +50,73 @@ def create_patient_route():
     except Exception as e:
         print(f"Erreur lors de la création du patient: {str(e)}")
         return jsonify({"error": f"Erreur serveur: {str(e)}"}), 500
+@app.route('/profil')
+def profil_patient():
+    if session.get('user') != 'patient' or 'email' not in session:
+        flash("Accès refusé", "danger")
+        return redirect(url_for('login'))
 
+    email = session['email']
+    patient = get_patient_by_email(email)
 
+    if not patient:
+        flash("Patient introuvable", "danger")
+        return redirect(url_for('patient_page', email=email))
+
+    return render_template('profil.html', patient=patient)
+@app.route('/profil_medecin')
+def profil_medecin():
+    if session.get('user_type') != 'medecin' or 'email' not in session:
+        flash("Accès refusé", "danger")
+        return redirect(url_for('login'))
+    email = session['email']
+    medecin = get_medecin_by_email(email)  # À adapter selon votre code
+    return render_template('profil_medecin.html', medecin=medecin)
+@app.route('/modifier_profil', methods=['GET', 'POST'])
+def modifier_profil():
+    if session.get('user') != 'patient':
+        flash("Accès refusé", "danger")
+        return redirect(url_for('login'))
+
+    email = session.get('email')
+    patient = get_patient_by_email(email)
+
+    if request.method == 'POST':
+        nom = request.form.get('nom')
+        prenom = request.form.get('prenom')
+        numero = request.form.get('numero')
+
+        mongo_db.patients.update_one(
+            {"email": email},
+            {"$set": {"nom": nom, "prenom": prenom, "numero": numero}}
+        )
+        flash("Profil mis à jour avec succès", "success")
+        return redirect(url_for('profil_patient'))
+
+    return render_template("modifier_profil.html", patient=patient)
+
+@app.route('/modifier_profil_medecin', methods=['GET', 'POST'])
+def modifier_profil_medecin():
+    if session.get('user') != 'medecin':
+        flash("Accès refusé", "danger")
+        return redirect(url_for('login'))
+
+    email = session.get('email')
+    medecin = get_medecin_by_email(email)
+
+    if request.method == 'POST':
+        nom = request.form.get('nom')
+        prenom = request.form.get('prenom')
+        specialite = request.form.get('specialite')
+
+        mongo_db.medecins.update_one(
+            {"email": email},
+            {"$set": {"nom": nom, "prenom": prenom, "specialite": specialite}}
+        )
+        flash("Profil mis à jour avec succès", "success")
+        return redirect(url_for('profil_medecin'))
+
+    return render_template("modifier_profil_medecin.html", medecin=medecin)
 @app.route('/medecin', methods=['POST'])
 def create_medecin_route():
     try:
@@ -138,9 +203,10 @@ def login():
 
 @app.route('/logout')
 def logout():
-    session.pop('user', None)
-    session.pop('email', None)
+    session.clear()
+    flash("Déconnecté avec succès.", "success")
     return redirect(url_for('login'))
+
 
 
 @app.route('/medecin/<email>')
@@ -148,6 +214,7 @@ def medecin_page(email):
     if session.get('user') != 'medecin' or session.get('email') != email:
         flash("Accès refusé", "danger")
         return redirect(url_for('login'))
+    session['user_type'] = 'medecin'
 
     medecin = get_medecin_by_email(email)
     return render_template('medecin.html', medecin=medecin)
@@ -155,9 +222,13 @@ def medecin_page(email):
 
 @app.route('/patient/<email>')
 def patient_page(email):
+    # Vérification d'accès
     if session.get('user') != 'patient' or session.get('email') != email:
         flash("Accès refusé", "danger")
         return redirect(url_for('login'))
+
+    # Définir le user_type dans la session (nécessaire pour base.html)
+    session['user_type'] = 'patient'
 
     patient = get_patient_by_email(email)
     consultations = list(mongo_db.consultations.find({"patient_email": email}))
@@ -170,6 +241,7 @@ def patient_page(email):
         c["_id"] = str(c["_id"])
 
     return render_template('patient.html', patient=patient, consultations=consultations)
+
 from bson import ObjectId
 
 
