@@ -18,59 +18,96 @@
 
 <!-- Historique des consultations -->
 <div class="section history-section">
-    <h2>Mes consultations </h2>
+    <h2>Mes consultations</h2>
+
+    <style>
+        .consultation-table {
+            width: 100%;
+            margin-bottom: 1rem;
+            border-collapse: collapse;
+        }
+
+        .consultation-table thead {
+            display: table-header-group !important;
+            background-color: #f8f9fa;
+        }
+
+        .consultation-table th {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 2px solid #dee2e6;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .consultation-table td {
+            padding: 12px;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .consultation-table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+    </style>
 
     {% if consultations %}
-        <div class="table-responsive">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Heure</th>
-                        <th>Médecin</th>
-                        <th>Spécialité</th>
-                        <th>Statut</th> <!-- Nouvelle colonne -->
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for c in consultations %}
-                    <tr>
-                        <td>{{ c.date }}</td>
-                        <td>{{ c.heure }}</td>
-                        <td>{{ c.medecin_nom }}</td>
-                        <td>{{ c.specialite }}</td>
-                        <td>
-                            {% if c.statut == 'annule' %}
-                                <span class="badge bg-danger">Annulée</span>
-                            {% elif c.statut == 'terminee' %}
-                                <span class="badge bg-secondary">Terminée</span>
-                            {% else %}
-                                <span class="badge bg-success">En cours</span>
+    <div class="table-responsive">
+        <table class="consultation-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Heure</th>
+                    <th>Médecin</th>
+                    <th>Spécialité</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in consultations %}
+                <tr>
+                    <td>
+                        {% if c.date_heure %}
+                            {{ c.date_heure.strftime('%d/%m/%Y') }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if c.date_heure and c.heure_fin %}
+                            De {{ c.date_heure.strftime('%H:%M') }} à {{ c.heure_fin.strftime('%H:%M') }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
+                    <td>{{ c.medecin_nom }}</td>
+                    <td>{{ c.specialite }}</td>
+                    <td>
+                        {% if c.statut == 'annule' %}
+                            <span class="badge bg-danger">Annulée</span>
+                        {% elif c.statut == 'terminee' %}
+                            <span class="badge bg-secondary">Terminée</span>
+                        {% else %}
+                            <span class="badge bg-success">En cours</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="{{ url_for('update_consultation_form', consultation_id=c._id) }}" class="btn btn-sm btn-warning">📝 Modifier</a>
+                            {% if c.statut == 'en_cours' %}
+                                <a href="{{ url_for('delete_consultation', consultation_id=c._id) }}" class="btn btn-sm btn-danger">Annuler</a>
                             {% endif %}
-                        </td>
-                        <td>
-                            <div class="action-buttons">
-                                <a href="{{ url_for('update_consultation_form', consultation_id=c._id) }}" class="btn btn-sm btn-warning">📝 Modifier</a>
-
-                                {% if c.statut == 'en_cours' %}
-                                    <a href="{{ url_for('delete_consultation', consultation_id=c._id) }}" class="btn btn-sm btn-danger">
-                                        Annuler
-                                    </a>
-                                {% endif %}
-                            </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
     {% else %}
-        <div class="empty-message">
-            <p>Aucune consultation trouvée.</p>
-        </div>
+    <div class="empty-message">
+        <p>Aucune consultation trouvée.</p>
+    </div>
     {% endif %}
 </div>
-
-
 {% endblock %}

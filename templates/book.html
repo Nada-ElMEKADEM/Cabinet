@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -84,9 +83,62 @@
       background: linear-gradient(90deg, transparent, #e2e8f0, transparent);
     }
 
+    .form-progress {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 3rem;
+      position: relative;
+    }
+
+    .form-progress::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: #e2e8f0;
+      z-index: 1;
+    }
+
+    .progress-step {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      color: #94a3b8;
+      position: relative;
+      z-index: 2;
+      transition: all 0.3s ease;
+    }
+
+    .progress-step.active {
+      background: linear-gradient(135deg, #94a3b8, #64748b);
+      color: white;
+    }
+
+    .progress-step.completed {
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      color: white;
+    }
+
     .form-step {
       margin-bottom: 2rem;
       position: relative;
+      opacity: 0.3;
+      transition: all 0.3s ease;
+    }
+
+    .form-step.active {
+      opacity: 1;
+    }
+
+    .form-step.completed {
+      opacity: 0.8;
     }
 
     .form-step-number {
@@ -122,7 +174,7 @@
       width: 20px;
     }
 
-    select {
+    select, input[type="date"] {
       width: 100% !important;
       padding: 1rem 1.25rem !important;
       border: 2px solid #e2e8f0 !important;
@@ -132,6 +184,9 @@
       font-size: 1rem !important;
       transition: all 0.3s ease !important;
       appearance: none;
+    }
+
+    select {
       background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
       background-position: right 1rem center;
       background-repeat: no-repeat;
@@ -139,14 +194,22 @@
       padding-right: 3rem !important;
     }
 
-    select:focus {
+    input[type="date"] {
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3e%3cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'/%3e%3c/svg%3e");
+      background-position: right 1rem center;
+      background-repeat: no-repeat;
+      background-size: 1.25rem;
+      padding-right: 3rem !important;
+    }
+
+    select:focus, input[type="date"]:focus {
       outline: none !important;
       border-color: #94a3b8 !important;
       box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.1) !important;
       transform: translateY(-1px);
     }
 
-    select:disabled {
+    select:disabled, input[type="date"]:disabled {
       background: #f8fafc !important;
       color: #94a3b8 !important;
       cursor: not-allowed;
@@ -220,6 +283,7 @@
       display: flex;
       align-items: center;
       gap: 0.75rem;
+      animation: slideIn 0.5s ease-out;
     }
 
     .alert-success {
@@ -261,47 +325,15 @@
       to { transform: rotate(360deg); }
     }
 
-    .form-progress {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 3rem;
-      position: relative;
-    }
-
-    .form-progress::before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: #e2e8f0;
-      z-index: 1;
-    }
-
-    .progress-step {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: #e2e8f0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 600;
-      color: #94a3b8;
-      position: relative;
-      z-index: 2;
-      transition: all 0.3s ease;
-    }
-
-    .progress-step.active {
-      background: linear-gradient(135deg, #94a3b8, #64748b);
-      color: white;
-    }
-
-    .progress-step.completed {
-      background: linear-gradient(135deg, #22c55e, #16a34a);
-      color: white;
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
     }
 
     .fade-in {
@@ -317,6 +349,24 @@
         opacity: 1;
         transform: translateY(0);
       }
+    }
+
+    .select-container {
+      position: relative;
+    }
+
+    .select-container.loading::after {
+      content: '';
+      position: absolute;
+      right: 3rem;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+      border: 2px solid #e2e8f0;
+      border-radius: 50%;
+      border-top-color: #64748b;
+      animation: spin 0.8s ease-in-out infinite;
     }
 
     @media (max-width: 768px) {
@@ -346,25 +396,6 @@
         font-size: 0.9rem;
       }
     }
-
-    /* Animations pour les selects */
-    .select-container {
-      position: relative;
-    }
-
-    .select-container.loading::after {
-      content: '';
-      position: absolute;
-      right: 3rem;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 16px;
-      height: 16px;
-      border: 2px solid #e2e8f0;
-      border-radius: 50%;
-      border-top-color: #64748b;
-      animation: spin 0.8s ease-in-out infinite;
-    }
   </style>
 </head>
 
@@ -374,84 +405,83 @@
 {% block title %}Accueil Médecin{% endblock %}
 
 {% block content %}
-  <div class="container fade-in">
+  <div class="container">
     <div class="header">
-      <h1>Réserver une consultation</h1>
-      <p class="header-subtitle">Choisissez votre spécialité, médecin et créneau horaire</p>
+      <h1><i class="fas fa-stethoscope" style="color: #64748b; margin-right: 1rem;"></i>BOOK</h1>
+      <p class="header-subtitle">Réservation de rendez-vous médical</p>
     </div>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for category, message in messages %}
-          <div class="alert alert-{{ category }}">
-            {% if category == 'success' %}
-              <i class="fas fa-check-circle"></i>
-            {% elif category == 'danger' %}
-              <i class="fas fa-exclamation-triangle"></i>
-            {% elif category == 'warning' %}
-              <i class="fas fa-exclamation-circle"></i>
-            {% else %}
-              <i class="fas fa-info-circle"></i>
-            {% endif %}
-            {{ message }}
-          </div>
-        {% endfor %}
-      {% endif %}
-    {% endwith %}
-
-    <div class="form-container">
+    <div class="form-container fade-in">
+      <!-- Barre de progression -->
       <div class="form-progress">
         <div class="progress-step active" id="step1">1</div>
         <div class="progress-step" id="step2">2</div>
         <div class="progress-step" id="step3">3</div>
+        <div class="progress-step" id="step4">4</div>
       </div>
 
+      <!-- Messages d'alerte -->
+      <div id="alertContainer"></div>
+
       <form method="POST" id="bookingForm">
-        <div class="form-step">
+        <!-- Étape 1 : Spécialité -->
+        <div class="form-step active" id="specialiteStep">
           <div class="form-step-number">1</div>
           <label for="specialite">
-            <i class="fas fa-stethoscope"></i>
-            Choisissez une spécialité
+            <i class="fas fa-user-md"></i>
+            Spécialité médicale
           </label>
           <div class="select-container">
             <select name="specialite" id="specialite" required>
               <option value="">-- Sélectionnez une spécialité --</option>
               {% for s in specialites %}
-                <option value="{{ s }}">{{ s }}</option>
+              <option value="{{ s }}">{{ s }}</option>
               {% endfor %}
             </select>
           </div>
         </div>
 
-        <div class="form-step">
+        <!-- Étape 2 : Médecin -->
+        <div class="form-step" id="medecinStep">
           <div class="form-step-number">2</div>
           <label for="medecin">
-            <i class="fas fa-user-md"></i>
-            Médecin disponible
+            <i class="fas fa-user-doctor"></i>
+            Médecin
           </label>
-          <div class="select-container" id="medecinContainer">
+          <div class="select-container">
             <select name="medecin_id" id="medecin" required disabled>
-              <option value="">Choisissez une spécialité d'abord</option>
+              <option value="">-- Sélectionnez d'abord une spécialité --</option>
             </select>
           </div>
         </div>
 
-        <div class="form-step">
+        <!-- Étape 3 : Date -->
+        <div class="form-step" id="dateStep">
           <div class="form-step-number">3</div>
-          <label for="creneau">
+          <label for="date">
             <i class="fas fa-calendar-alt"></i>
-            Créneau horaire de 2h
+            Date du rendez-vous
           </label>
-          <div class="select-container" id="creneauContainer">
+          <input type="date" name="date" id="date" required disabled>
+        </div>
+
+        <!-- Étape 4 : Créneau -->
+        <div class="form-step" id="creneauStep">
+          <div class="form-step-number">4</div>
+          <label for="creneau">
+            <i class="fas fa-clock"></i>
+            Créneau horaire
+          </label>
+          <div class="select-container">
             <select name="creneau" id="creneau" required disabled>
-              <option value="">Choisissez un médecin d'abord</option>
+              <option value="">Choisissez une date d'abord</option>
             </select>
           </div>
         </div>
 
         <button type="submit" class="btn" id="submitBtn">
           <i class="fas fa-calendar-check"></i>
-          Réserver ma consultation
+          Réserver le rendez-vous
         </button>
       </form>
     </div>
@@ -460,140 +490,150 @@
   <script>
     const specialiteSelect = document.getElementById('specialite');
     const medecinSelect = document.getElementById('medecin');
+    const dateInput = document.getElementById('date');
     const creneauSelect = document.getElementById('creneau');
-    const medecinContainer = document.getElementById('medecinContainer');
-    const creneauContainer = document.getElementById('creneauContainer');
-    const submitBtn = document.getElementById('submitBtn');
+    const alertContainer = document.getElementById('alertContainer');
 
-    // Progress steps
-    const step1 = document.getElementById('step1');
-    const step2 = document.getElementById('step2');
-    const step3 = document.getElementById('step3');
+    // Éléments de progression
+    const steps = {
+      1: document.getElementById('step1'),
+      2: document.getElementById('step2'),
+      3: document.getElementById('step3'),
+      4: document.getElementById('step4')
+    };
 
-    function updateProgressSteps() {
-      // Reset all steps
-      [step1, step2, step3].forEach(step => {
-        step.classList.remove('active', 'completed');
+    const formSteps = {
+      1: document.getElementById('specialiteStep'),
+      2: document.getElementById('medecinStep'),
+      3: document.getElementById('dateStep'),
+      4: document.getElementById('creneauStep')
+    };
+
+    function updateProgress(currentStep) {
+      Object.keys(steps).forEach(step => {
+        const stepNum = parseInt(step);
+        const stepElement = steps[stepNum];
+        const formStepElement = formSteps[stepNum];
+
+        if (stepNum < currentStep) {
+          stepElement.classList.remove('active');
+          stepElement.classList.add('completed');
+          formStepElement.classList.remove('active');
+          formStepElement.classList.add('completed');
+        } else if (stepNum === currentStep) {
+          stepElement.classList.add('active');
+          stepElement.classList.remove('completed');
+          formStepElement.classList.add('active');
+          formStepElement.classList.remove('completed');
+        } else {
+          stepElement.classList.remove('active', 'completed');
+          formStepElement.classList.remove('active', 'completed');
+        }
       });
-
-      if (specialiteSelect.value) {
-        step1.classList.add('completed');
-        step2.classList.add('active');
-      } else {
-        step1.classList.add('active');
-      }
-
-      if (medecinSelect.value && !medecinSelect.disabled) {
-        step2.classList.remove('active');
-        step2.classList.add('completed');
-        step3.classList.add('active');
-      }
-
-      if (creneauSelect.value && !creneauSelect.disabled) {
-        step3.classList.remove('active');
-        step3.classList.add('completed');
-      }
     }
 
+    function showAlert(type, message) {
+      alertContainer.innerHTML = `
+        <div class="alert alert-${type}">
+          <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+          ${message}
+        </div>
+      `;
+    }
+
+    function showLoading(selectElement) {
+      selectElement.parentElement.classList.add('loading');
+    }
+
+    function hideLoading(selectElement) {
+      selectElement.parentElement.classList.remove('loading');
+    }
+
+    // Étape 1: Sélection de la spécialité
     specialiteSelect.addEventListener('change', () => {
       const specialite = specialiteSelect.value;
-
-      medecinContainer.classList.add('loading');
-      medecinSelect.innerHTML = '<option>Chargement...</option>';
-      medecinSelect.disabled = true;
-      creneauSelect.innerHTML = '<option>Choisissez un médecin d\'abord</option>';
-      creneauSelect.disabled = true;
-
-      updateProgressSteps();
-
       if (!specialite) {
-        medecinContainer.classList.remove('loading');
-        medecinSelect.innerHTML = '<option>Choisissez une spécialité d\'abord</option>';
         medecinSelect.disabled = true;
+        dateInput.disabled = true;
+        creneauSelect.disabled = true;
+        updateProgress(1);
         return;
       }
+
+      showLoading(medecinSelect);
 
       fetch(`/medecins_par_specialite?specialite=${encodeURIComponent(specialite)}`)
         .then(res => res.json())
         .then(data => {
-          medecinContainer.classList.remove('loading');
-          medecinSelect.disabled = false;
-          if(data.length === 0){
-            medecinSelect.innerHTML = '<option>Aucun médecin trouvé</option>';
-            medecinSelect.disabled = true;
-            return;
-          }
           medecinSelect.innerHTML = '<option value="">-- Sélectionnez un médecin --</option>';
-          data.forEach(medecin => {
-            medecinSelect.innerHTML += `<option value="${medecin._id}">Dr. ${medecin.prenom} ${medecin.nom}</option>`;
+          data.forEach(m => {
+            medecinSelect.innerHTML += `<option value="${m._id}">Dr. ${m.prenom} ${m.nom}</option>`;
           });
-          updateProgressSteps();
+          medecinSelect.disabled = false;
+          updateProgress(2);
+          hideLoading(medecinSelect);
         })
-        .catch(() => {
-          medecinContainer.classList.remove('loading');
-          medecinSelect.innerHTML = '<option>Erreur lors du chargement</option>';
-          medecinSelect.disabled = true;
+        .catch(error => {
+          console.error('Erreur:', error);
+          showAlert('danger', 'Erreur lors du chargement des médecins');
+          hideLoading(medecinSelect);
         });
     });
 
+    // Étape 2: Sélection du médecin
     medecinSelect.addEventListener('change', () => {
       const medecinId = medecinSelect.value;
-
-      creneauContainer.classList.add('loading');
-      creneauSelect.innerHTML = '<option>Chargement...</option>';
-      creneauSelect.disabled = true;
-
-      updateProgressSteps();
-
       if (!medecinId) {
-        creneauContainer.classList.remove('loading');
-        creneauSelect.innerHTML = '<option>Choisissez un médecin d\'abord</option>';
+        dateInput.disabled = true;
+        creneauSelect.disabled = true;
+        updateProgress(2);
+        return;
+      }
+
+      dateInput.disabled = false;
+      creneauSelect.disabled = true;
+      creneauSelect.innerHTML = '<option value="">Choisissez une date d\'abord</option>';
+      updateProgress(3);
+    });
+
+    // Étape 3: Sélection de la date
+    dateInput.addEventListener('change', () => {
+      const date = dateInput.value;
+      const medecinId = medecinSelect.value;
+
+      if (!date || !medecinId) {
         creneauSelect.disabled = true;
         return;
       }
 
-      fetch(`/horaires_fixes?id=${encodeURIComponent(medecinId)}`)
+      showLoading(creneauSelect);
+
+      fetch(`/horaires_par_jour?id=${medecinId}&date=${date}`)
         .then(res => res.json())
         .then(data => {
-          creneauContainer.classList.remove('loading');
-          creneauSelect.disabled = false;
-          if (Object.keys(data).length === 0) {
-            creneauSelect.innerHTML = '<option>Aucun créneau disponible</option>';
-            creneauSelect.disabled = true;
-            return;
-          }
           creneauSelect.innerHTML = '<option value="">-- Sélectionnez un créneau --</option>';
-
-          for (const jour in data) {
-            data[jour].forEach(creneau => {
-              if (creneau.start && creneau.end) {
-                const val = `${jour} ${creneau.start} - ${creneau.end}`;
-                creneauSelect.innerHTML += `<option value="${val}">${val}</option>`;
-              } else {
-                console.warn("Créneau mal formé pour", jour, creneau);
-              }
-            });
-          }
-          updateProgressSteps();
+          data.forEach(c => {
+            creneauSelect.innerHTML += `<option value="${c.start} - ${c.end}">${c.start} - ${c.end}</option>`;
+          });
+          creneauSelect.disabled = false;
+          updateProgress(4);
+          hideLoading(creneauSelect);
         })
-        .catch(() => {
-          creneauContainer.classList.remove('loading');
-          creneauSelect.innerHTML = '<option>Erreur lors du chargement</option>';
-          creneauSelect.disabled = true;
+        .catch(error => {
+          console.error('Erreur:', error);
+          showAlert('danger', 'Erreur lors du chargement des créneaux');
+          hideLoading(creneauSelect);
         });
     });
 
-    creneauSelect.addEventListener('change', updateProgressSteps);
-
-    // Form submission with loading state
-    document.getElementById('bookingForm').addEventListener('submit', function(e) {
-      submitBtn.innerHTML = '<div class="loading-spinner"></div>Réservation en cours...';
-      submitBtn.disabled = true;
+    // Étape 4: Sélection du créneau
+    creneauSelect.addEventListener('change', () => {
+      if (creneauSelect.value) {
+        showAlert('success', 'Toutes les informations sont complètes. Vous pouvez maintenant réserver votre rendez-vous.');
+      }
     });
 
-    // Initialize progress
-    updateProgressSteps();
+    // Initialisation
+    updateProgress(1);
   </script>
-</body>
-</html>
 {% endblock %}

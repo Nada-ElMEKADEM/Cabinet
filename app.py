@@ -1,3 +1,4 @@
+import calendar
 
 from bson import ObjectId
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
@@ -235,7 +236,7 @@ def patient_page(email):
     patient = get_patient_by_email(email)
     consultations = list(mongo_db.consultations.find({"patient_email": email}))
 
-    now = datetime.now().date()  # Date d'aujourd'hui
+    now = datetime.utcnow()  # Date d'aujourd'hui
 
     for c in consultations:
         c["date"] = c.get("date", "N/A")
@@ -245,16 +246,13 @@ def patient_page(email):
         c["_id"] = str(c["_id"])
 
         # --- Mise à jour automatique du statut si la date est dépassée ---
-        try:
-            consultation_date = datetime.strptime(c["date"], "%Y-%m-%d").date()
-            if consultation_date < now and c.get("statut") == "en_cours":
-                mongo_db.consultations.update_one(
-                    {"_id": ObjectId(c["_id"])},
-                    {"$set": {"statut": "terminee"}}
-                )
-                c["statut"] = "terminee"  # Mettre à jour aussi dans l'objet local
-        except Exception as e:
-            print(f"Erreur lors du parsing ou mise à jour de la date : {e}")
+        heure_fin = c.get("heure_fin")
+        if c["statut"] == "en_cours" and isinstance(heure_fin, datetime) and heure_fin < now:
+            mongo_db.db.consultations.update_one(
+                {"_id": c["_id"]},
+                {"$set": {"statut": "terminee"}}
+            )
+            c["statut"] = "terminee"
 
     return render_template('patient.html', patient=patient, consultations=consultations)
 
@@ -391,59 +389,84 @@ def book():
     if session.get('user') != 'patient':
         flash("Veuillez vous connecter en tant que patient", "danger")
         return redirect(url_for('login'))
-
     if request.method == 'POST':
         data = request.form
         patient_email = session.get('email')
-
         try:
             specialite = data['specialite']
             medecin_id = data['medecin_id']
-            creneau = data['creneau']
+            date_choisie = data['date']  # "2025-06-15"
+            creneau_selectionne = data['creneau']  # Ex: "08:00 - 10:00"
         except KeyError:
             flash("Tous les champs sont requis", "danger")
             return redirect(url_for('book'))
         medecin = mongo_db.medecins.find_one({"_id": ObjectId(medecin_id)})
-
+        jour_semaine = calendar.day_name[datetime.strptime(date_choisie, "%Y-%m-%d").weekday()]  # ex: "Monday"
         try:
-            # Format attendu : "lundi 08:00 - 10:00"
-            jour_creneau, heure_debut, _, heure_fin = creneau.split()
-        except Exception:
-            flash("Créneau invalide", "danger")
+            heure_debut, heure_fin = creneau_selectionne.split(' - ')
+            start_datetime = datetime.strptime(f"{date_choisie} {heure_debut}", "%Y-%m-%d %H:%M")
+            end_datetime = datetime.strptime(f"{date_choisie} {heure_fin}", "%Y-%m-%d %H:%M")
+        except:
+            flash("Format de créneau invalide", "danger")
             return redirect(url_for('book'))
-
-        # ⚠️ Vérification si le créneau est déjà pris
         deja_pris = mongo_db.consultations.find_one({
             "medecin_id": medecin_id,
-            "date": jour_creneau,
-            "heure": heure_debut
+            "date_heure": start_datetime
         })
-
         if deja_pris:
             flash("⚠️ Ce créneau est déjà réservé. Veuillez en choisir un autre.", "warning")
             return redirect(url_for('book'))
-
         consultation = {
             "patient_email": patient_email,
             "medecin_id": medecin_id,
             "medecin_nom": f"{medecin['prenom']} {medecin['nom']}",
             "specialite": specialite,
-            "date": jour_creneau,
-            "heure": heure_debut,
-            "heure_fin": heure_fin,
+            "date_heure": start_datetime,
+            "heure_fin": end_datetime,
             "created_at": datetime.utcnow(),
             "statut": "en_cours"
         }
         mongo_db.consultations.insert_one(consultation)
-
-
-
         flash("✅ Réservation confirmée", "success")
         return redirect(url_for('patient_page', email=patient_email))
-
-    # 👇 En cas de GET, affichage du formulaire
     specialites = mongo_db.medecins.distinct("specialite")
     return render_template('book.html', specialites=specialites)
+@app.route('/horaires_par_jour', methods=['GET'])
+def horaires_par_jour():
+    medecin_id = request.args.get('id')
+    date_str = request.args.get('date') # "2025-06-15"
+    if not medecin_id or not date_str:
+        return jsonify([])
+
+    try:
+        jours_fr = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"]
+        jour = jours_fr[datetime.strptime(date_str, "%Y-%m-%d").weekday()]
+    except ValueError:
+        return jsonify([])
+
+    medecin = mongo_db.medecins.find_one({"_id": ObjectId(medecin_id)})
+
+    if not medecin or "horaires" not in medecin or jour not in medecin["horaires"]:
+        return jsonify([])
+
+    horaires_jour = medecin["horaires"][jour]
+    creneaux_2h = []
+
+    for h in horaires_jour:
+        start_time = datetime.strptime(h['start'], "%H:%M")
+        end_time = datetime.strptime(h['end'], "%H:%M")
+        current_time = start_time
+
+        while current_time + timedelta(hours=2) <= end_time:
+            creneau = {
+                "start": current_time.strftime("%H:%M"),
+                "end": (current_time + timedelta(hours=2)).strftime("%H:%M")
+            }
+            creneaux_2h.append(creneau)
+            current_time += timedelta(hours=2)  # pour éviter chevauchement
+
+    return jsonify(creneaux_2h)
+
 
 @app.route('/admin/add-user', methods=['GET', 'POST'])
 def add_user():

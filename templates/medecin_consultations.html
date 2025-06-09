@@ -365,7 +365,13 @@
                     <i class="fas fa-calendar-day"></i>
                   </div>
                   <div>
-                    <div style="font-weight: 600;">{{ c.date }}</div>
+                    <div>
+                        {% if c.date_heure %}
+                            {{ c.date_heure.strftime('%d/%m/%Y') }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </div>
                   </div>
                 </div>
               </td>
@@ -373,7 +379,11 @@
                 <div class="time-cell">
                   <div class="time-badge">
                     <i class="fas fa-clock"></i>
-                    {{ c.heure }}
+                    {% if c.date_heure and c.heure_fin %}
+                            De {{ c.date_heure.strftime('%H:%M') }} à {{ c.heure_fin.strftime('%H:%M') }}
+                        {% else %}
+                            N/A
+                        {% endif %}
                   </div>
                 </div>
               </td>
