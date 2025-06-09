@@ -4,6 +4,309 @@
   <meta charset="UTF-8">
   <title>Modifier Médecin</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #2c3e50;
+      --secondary-color: #34495e;
+      --accent-color: #3498db;
+      --success-color: #27ae60;
+      --danger-color: #e74c3c;
+      --light-gray: #ecf0f1;
+      --medium-gray: #bdc3c7;
+      --dark-gray: #7f8c8d;
+      --white: #ffffff;
+      --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      --shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    body {
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100vh;
+      padding: 2rem 0;
+    }
+
+    .main-container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: var(--white);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      animation: slideIn 0.6s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .header {
+      background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+      color: var(--white);
+      padding: 2rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 2px,
+        rgba(255,255,255,0.05) 2px,
+        rgba(255,255,255,0.05) 4px
+      );
+      animation: float 20s linear infinite;
+    }
+
+    @keyframes float {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .header h2 {
+      margin: 0;
+      font-size: 2.5rem;
+      font-weight: 300;
+      letter-spacing: 2px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .header .subtitle {
+      margin-top: 0.5rem;
+      opacity: 0.9;
+      font-size: 1.1rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .form-container {
+      padding: 3rem;
+    }
+
+    .form-section {
+      margin-bottom: 3rem;
+    }
+
+    .section-title {
+      color: var(--primary-color);
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--light-gray);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+      position: relative;
+    }
+
+    .form-label {
+      font-weight: 600;
+      color: var(--secondary-color);
+      margin-bottom: 0.5rem;
+      font-size: 0.95rem;
+      letter-spacing: 0.5px;
+    }
+
+    .form-control {
+      border: 2px solid var(--light-gray);
+      border-radius: 12px;
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      background: var(--white);
+    }
+
+    .form-control:focus {
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+      background: var(--white);
+    }
+
+    .day-container {
+      background: linear-gradient(145deg, #f8f9fa, #e9ecef);
+      border: none;
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      box-shadow: inset 2px 2px 5px rgba(0,0,0,0.1), inset -2px -2px 5px rgba(255,255,255,0.8);
+      transition: all 0.3s ease;
+    }
+
+    .day-container:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-hover), inset 2px 2px 5px rgba(0,0,0,0.1), inset -2px -2px 5px rgba(255,255,255,0.8);
+    }
+
+    .day-header {
+      display: flex;
+      justify-content: between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .day-title {
+      color: var(--primary-color);
+      font-weight: 600;
+      font-size: 1.1rem;
+      margin: 0;
+      text-transform: capitalize;
+      letter-spacing: 0.5px;
+    }
+
+    .btn {
+      border-radius: 10px;
+      font-weight: 500;
+      padding: 0.5rem 1rem;
+      transition: all 0.3s ease;
+      border: none;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, var(--success-color), #2ecc71);
+      color: var(--white);
+      box-shadow: 0 2px 4px rgba(39, 174, 96, 0.3);
+    }
+
+    .btn-success:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(39, 174, 96, 0.4);
+      background: linear-gradient(135deg, #2ecc71, var(--success-color));
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, var(--danger-color), #c0392b);
+      color: var(--white);
+      box-shadow: 0 2px 4px rgba(231, 76, 60, 0.3);
+    }
+
+    .btn-danger:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(231, 76, 60, 0.4);
+      background: linear-gradient(135deg, #c0392b, var(--danger-color));
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent-color), #2980b9);
+      color: var(--white);
+      padding: 0.75rem 2rem;
+      font-size: 1.1rem;
+      box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(52, 152, 219, 0.4);
+      background: linear-gradient(135deg, #2980b9, var(--accent-color));
+    }
+
+    .btn-secondary {
+      background: linear-gradient(135deg, var(--medium-gray), var(--dark-gray));
+      color: var(--white);
+      padding: 0.75rem 2rem;
+      font-size: 1.1rem;
+      box-shadow: 0 4px 8px rgba(127, 140, 141, 0.3);
+    }
+
+    .btn-secondary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(127, 140, 141, 0.4);
+      background: linear-gradient(135deg, var(--dark-gray), var(--medium-gray));
+    }
+
+    .time-slot {
+      background: var(--white);
+      border-radius: 12px;
+      padding: 1rem;
+      margin-bottom: 0.5rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+      animation: slideInTime 0.5s ease-out;
+    }
+
+    @keyframes slideInTime {
+      from {
+        opacity: 0;
+        transform: translateX(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .time-slot:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+
+    .actions-container {
+      background: var(--light-gray);
+      padding: 2rem;
+      text-align: center;
+      border-top: 1px solid var(--medium-gray);
+    }
+
+    .btn-icon {
+      margin-right: 0.5rem;
+    }
+
+    .floating-label {
+      position: relative;
+    }
+
+    .floating-label input:focus + label,
+    .floating-label input:not(:placeholder-shown) + label {
+      transform: translateY(-1.5rem) scale(0.8);
+      color: var(--accent-color);
+    }
+
+    .required-asterisk {
+      color: var(--danger-color);
+      margin-left: 2px;
+    }
+
+    @media (max-width: 768px) {
+      .main-container {
+        margin: 1rem;
+        border-radius: 15px;
+      }
+
+      .form-container {
+        padding: 2rem 1.5rem;
+      }
+
+      .header {
+        padding: 1.5rem;
+      }
+
+      .header h2 {
+        font-size: 2rem;
+      }
+    }
+  </style>
   <script>
     function addTimeSlot(jour) {
       const container = document.getElementById(`${jour}-horaires`);
@@ -21,69 +324,139 @@
                  name="horaires[${jour}][${index}][end]">
         </div>
         <div class="col-auto">
-          <button type="button" class="btn btn-danger"
-                  onclick="this.parentElement.remove()">Supprimer</button>
+          <button type="button" class="btn btn-danger btn-sm"
+                  onclick="removeTimeSlot(this)">
+            <i class="fas fa-trash btn-icon"></i>Supprimer
+          </button>
         </div>
       `;
       container.appendChild(div);
     }
+
+    function removeTimeSlot(button) {
+      const timeSlot = button.closest('.time-slot');
+      timeSlot.style.animation = 'slideOutTime 0.3s ease-in forwards';
+      setTimeout(() => {
+        timeSlot.remove();
+      }, 300);
+    }
+
+    // Animation de sortie pour les créneaux
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes slideOutTime {
+        from {
+          opacity: 1;
+          transform: translateX(0);
+        }
+        to {
+          opacity: 0;
+          transform: translateX(-20px);
+        }
+      }
+    `;
+    document.head.appendChild(style);
   </script>
 </head>
-<body class="container mt-5">
-  <h2>Modifier Médecin</h2>
-
-  <form method="POST" action="{{ url_for('update_medecin_submit') }}">
-    <input type="hidden" name="email" value="{{ medecin.email }}">
-
-    <!-- Champs existants (nom, prénom, spécialité) -->
-    <div class="mb-3">
-      <label class="form-label">Nom</label>
-      <input type="text" class="form-control" name="nom" value="{{ medecin.nom }}" required>
+<body>
+  <div class="main-container">
+    <div class="header">
+      <h2><i class="fas fa-user-md"></i> Modifier Médecin</h2>
+      <div class="subtitle">Gestion des informations et des horaires</div>
     </div>
 
-    <div class="mb-3">
-      <label class="form-label">Prénom</label>
-      <input type="text" class="form-control" name="prenom" value="{{ medecin.prenom }}" required>
-    </div>
+    <div class="form-container">
+      <form method="POST" action="{{ url_for('update_medecin_submit') }}">
+        <input type="hidden" name="email" value="{{ medecin.email }}">
 
-    <div class="mb-3">
-      <label class="form-label">Spécialité</label>
-      <input type="text" class="form-control" name="specialite" value="{{ medecin.specialite }}" required>
-    </div>
+        <!-- Informations personnelles -->
+        <div class="form-section">
+          <h4 class="section-title">
+            <i class="fas fa-user"></i>
+            Informations personnelles
+          </h4>
 
-    <h5>Horaires</h5>
-    {% for jour in ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'] %}
-      <div class="mb-3 border p-2 rounded">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-          <label class="form-label">{{ jour.capitalize() }}</label>
-          <button type="button" class="btn btn-sm btn-success"
-                  onclick="addTimeSlot('{{ jour }}')">Ajouter un créneau</button>
+          <div class="form-group">
+            <label class="form-label">Nom <span class="required-asterisk">*</span></label>
+            <input type="text" class="form-control" name="nom" value="{{ medecin.nom }}" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Prénom <span class="required-asterisk">*</span></label>
+            <input type="text" class="form-control" name="prenom" value="{{ medecin.prenom }}" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Spécialité <span class="required-asterisk">*</span></label>
+            <input type="text" class="form-control" name="specialite" value="{{ medecin.specialite }}" required>
+          </div>
         </div>
-        <div id="{{ jour }}-horaires">
-          {% for creneau in medecin.horaires.get(jour, []) %}
-            <div class="row mb-2 time-slot">
-              <div class="col">
-                <input type="time" class="form-control"
-                       name="horaires[{{ jour }}][{{ loop.index0 }}][start]"
-                       value="{{ creneau.start }}">
+
+        <!-- Horaires -->
+        <div class="form-section">
+          <h4 class="section-title">
+            <i class="fas fa-clock"></i>
+            Horaires de consultation
+          </h4>
+
+          {% for jour in ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'] %}
+            <div class="day-container">
+              <div class="day-header">
+                <h5 class="day-title">{{ jour.capitalize() }}</h5>
+                <button type="button" class="btn btn-success btn-sm"
+                        onclick="addTimeSlot('{{ jour }}')">
+                  <i class="fas fa-plus btn-icon"></i>Ajouter un créneau
+                </button>
               </div>
-              <div class="col">
-                <input type="time" class="form-control"
-                       name="horaires[{{ jour }}][{{ loop.index0 }}][end]"
-                       value="{{ creneau.end }}">
-              </div>
-              <div class="col-auto">
-                <button type="button" class="btn btn-sm btn-danger"
-                        onclick="this.parentElement.parentElement.remove()">Supprimer</button>
+              <div id="{{ jour }}-horaires">
+                {% for creneau in medecin.horaires.get(jour, []) %}
+                  <div class="row mb-2 time-slot">
+                    <div class="col">
+                      <input type="time" class="form-control"
+                             name="horaires[{{ jour }}][{{ loop.index0 }}][start]"
+                             value="{{ creneau.start }}">
+                    </div>
+                    <div class="col">
+                      <input type="time" class="form-control"
+                             name="horaires[{{ jour }}][{{ loop.index0 }}][end]"
+                             value="{{ creneau.end }}">
+                    </div>
+                    <div class="col-auto">
+                      <button type="button" class="btn btn-danger btn-sm"
+                              onclick="removeTimeSlot(this)">
+                        <i class="fas fa-trash btn-icon"></i>Supprimer
+                      </button>
+                    </div>
+                  </div>
+                {% endfor %}
               </div>
             </div>
           {% endfor %}
         </div>
-      </div>
-    {% endfor %}
+      </form>
+    </div>
 
-    <button type="submit" class="btn btn-primary">Mettre à jour</button>
-    <a href="{{ url_for('admin.liste_medecins') }}" class="btn btn-secondary">Annuler</a>
-  </form>
+    <div class="actions-container">
+      <button type="submit" form="form" class="btn btn-primary me-3">
+        <i class="fas fa-save btn-icon"></i>Mettre à jour
+      </button>
+      <a href="{{ url_for('admin.liste_medecins') }}" class="btn btn-secondary">
+        <i class="fas fa-times btn-icon"></i>Annuler
+      </a>
+    </div>
+  </div>
+
+  <script>
+    // Fix form submission
+    document.addEventListener('DOMContentLoaded', function() {
+      const form = document.querySelector('form');
+      form.id = 'form';
+
+      const submitBtn = document.querySelector('.btn-primary');
+      submitBtn.onclick = function() {
+        form.submit();
+      };
+    });
+  </script>
 </body>
 </html>

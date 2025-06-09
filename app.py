@@ -9,6 +9,8 @@ from routes.patient_routes import patient_bp
 from services.admin_service import create_patient, create_medecin, get_medecin_by_email, get_patient_by_email
 from datetime import datetime, timedelta
 
+from services.medecin_service import get_consultations_medecin
+
 app = Flask(__name__)
 app.secret_key = 'change_this_secret'
 
@@ -57,22 +59,69 @@ def profil_patient():
         flash("Accès refusé", "danger")
         return redirect(url_for('login'))
 
-    email = session['email']
+    email = session['email'].strip().lower()
     patient = get_patient_by_email(email)
 
     if not patient:
         flash("Patient introuvable", "danger")
         return redirect(url_for('patient_page', email=email))
 
-    return render_template('profil.html', patient=patient)
+    # Requête insensible à la casse
+    consultations = list(mongo_db.consultations.find({
+        "patient_email": {"$regex": f"^{email}$", "$options": "i"}
+    }))
+
+    # Calculs dynamiques
+    total = len(consultations)
+    en_cours = sum(1 for c in consultations if c.get("statut") == "en_cours")
+    terminees = sum(1 for c in consultations if c.get("statut") == "terminee")
+    annulees = sum(1 for c in consultations if c.get("statut") == "annule")
+
+    return render_template(
+        "profil.html",
+        patient=patient,
+        total=total,
+        en_cours=en_cours,
+        terminees=terminees,
+        annulees=annulees,
+    )
+
 @app.route('/profil_medecin')
 def profil_medecin():
     if session.get('user_type') != 'medecin' or 'email' not in session:
         flash("Accès refusé", "danger")
         return redirect(url_for('login'))
-    email = session['email']
-    medecin = get_medecin_by_email(email)  # À adapter selon votre code
-    return render_template('profil_medecin.html', medecin=medecin)
+
+    email = session['email'].strip().lower()
+    print("Email du médecin connecté :", email)
+
+    medecin = get_medecin_by_email(email)
+    if not medecin:
+        flash("Médecin introuvable", "danger")
+        return redirect(url_for('login'))
+
+    # Récupération des consultations via la fonction
+    consultations = get_consultations_medecin(medecin['_id'])
+
+    print("Nombre de consultations trouvées :", len(consultations))
+
+    # Statistiques
+    total = len(consultations)
+    en_cours = sum(1 for c in consultations if c.get("statut") == "en_cours")
+    terminees = sum(1 for c in consultations if c.get("statut") == "terminee")
+    annulees = sum(1 for c in consultations if c.get("statut") == "annule")
+
+    return render_template(
+        'profil_medecin.html',
+        medecin=medecin,
+        consultations=consultations,
+        total=total,
+        en_cours=en_cours,
+        terminees=terminees,
+        annulees=annulees
+    )
+
+
 @app.route('/modifier_profil', methods=['GET', 'POST'])
 def modifier_profil():
     if session.get('user') != 'patient':

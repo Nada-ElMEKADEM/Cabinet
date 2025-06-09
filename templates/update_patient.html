@@ -4,30 +4,452 @@
   <meta charset="UTF-8">
   <title>Modifier Patient</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #2c3e50;
+      --secondary-color: #34495e;
+      --accent-color: #3498db;
+      --success-color: #27ae60;
+      --danger-color: #e74c3c;
+      --light-gray: #ecf0f1;
+      --medium-gray: #bdc3c7;
+      --dark-gray: #7f8c8d;
+      --white: #ffffff;
+      --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      --shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    body {
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100vh;
+      padding: 2rem 0;
+      margin: 0;
+    }
+
+    .main-container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: var(--white);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      animation: slideIn 0.6s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .header {
+      background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+      color: var(--white);
+      padding: 2rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 2px,
+        rgba(255,255,255,0.05) 2px,
+        rgba(255,255,255,0.05) 4px
+      );
+      animation: float 20s linear infinite;
+    }
+
+    @keyframes float {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .header h2 {
+      margin: 0;
+      font-size: 2.5rem;
+      font-weight: 300;
+      letter-spacing: 2px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .header .subtitle {
+      margin-top: 0.5rem;
+      opacity: 0.9;
+      font-size: 1.1rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .form-container {
+      padding: 3rem;
+    }
+
+    .form-section {
+      margin-bottom: 2rem;
+    }
+
+    .section-title {
+      color: var(--primary-color);
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 2rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--light-gray);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .form-group {
+      margin-bottom: 2rem;
+      position: relative;
+    }
+
+    .form-label {
+      font-weight: 600;
+      color: var(--secondary-color);
+      margin-bottom: 0.5rem;
+      font-size: 0.95rem;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .field-icon {
+      color: var(--accent-color);
+      font-size: 1rem;
+    }
+
+    .form-control {
+      border: 2px solid var(--light-gray);
+      border-radius: 12px;
+      padding: 1rem 1.2rem;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      background: var(--white);
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .form-control:focus {
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25), inset 0 1px 3px rgba(0,0,0,0.1);
+      background: var(--white);
+      transform: translateY(-1px);
+    }
+
+    .form-control:hover {
+      border-color: var(--medium-gray);
+      transform: translateY(-1px);
+    }
+
+    .input-container {
+      position: relative;
+    }
+
+    .input-container::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--accent-color);
+      transition: width 0.3s ease;
+    }
+
+    .input-container:focus-within::after {
+      width: 100%;
+    }
+
+    .btn {
+      border-radius: 12px;
+      font-weight: 500;
+      padding: 0.75rem 2rem;
+      font-size: 1.1rem;
+      transition: all 0.3s ease;
+      border: none;
+      letter-spacing: 0.5px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    .btn:hover::before {
+      left: 100%;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent-color), #2980b9);
+      color: var(--white);
+      box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(52, 152, 219, 0.4);
+      background: linear-gradient(135deg, #2980b9, var(--accent-color));
+    }
+
+    .btn-secondary {
+      background: linear-gradient(135deg, var(--medium-gray), var(--dark-gray));
+      color: var(--white);
+      box-shadow: 0 4px 8px rgba(127, 140, 141, 0.3);
+    }
+
+    .btn-secondary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(127, 140, 141, 0.4);
+      background: linear-gradient(135deg, var(--dark-gray), var(--medium-gray));
+    }
+
+    .actions-container {
+      background: linear-gradient(145deg, #f8f9fa, #e9ecef);
+      padding: 2rem;
+      text-align: center;
+      border-top: 1px solid var(--light-gray);
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+    }
+
+    .btn-icon {
+      margin-right: 0.5rem;
+    }
+
+    .required-asterisk {
+      color: var(--danger-color);
+      margin-left: 2px;
+      font-weight: bold;
+    }
+
+    /* Animation pour les champs */
+    .form-group {
+      animation: fadeInUp 0.6s ease-out;
+      animation-fill-mode: both;
+    }
+
+    .form-group:nth-child(1) { animation-delay: 0.1s; }
+    .form-group:nth-child(2) { animation-delay: 0.2s; }
+    .form-group:nth-child(3) { animation-delay: 0.3s; }
+    .form-group:nth-child(4) { animation-delay: 0.4s; }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Effet de focus amélioré */
+    .form-control:focus {
+      animation: focusGlow 0.3s ease-out;
+    }
+
+    @keyframes focusGlow {
+      0% {
+        box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.7);
+      }
+      70% {
+        box-shadow: 0 0 0 10px rgba(52, 152, 219, 0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(52, 152, 219, 0);
+      }
+    }
+
+    /* Cards pour les champs */
+    .field-card {
+      background: linear-gradient(145deg, #ffffff, #f0f0f0);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow:
+        5px 5px 10px rgba(0,0,0,0.1),
+        -5px -5px 10px rgba(255,255,255,0.8);
+      transition: all 0.3s ease;
+    }
+
+    .field-card:hover {
+      transform: translateY(-2px);
+      box-shadow:
+        8px 8px 16px rgba(0,0,0,0.15),
+        -8px -8px 16px rgba(255,255,255,0.9);
+    }
+
+    @media (max-width: 768px) {
+      .main-container {
+        margin: 1rem;
+        border-radius: 15px;
+      }
+
+      .form-container {
+        padding: 2rem 1.5rem;
+      }
+
+      .header {
+        padding: 1.5rem;
+      }
+
+      .header h2 {
+        font-size: 2rem;
+      }
+
+      .actions-container {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .btn {
+        width: 100%;
+      }
+    }
+
+    /* Validation visuelle */
+    .form-control:valid {
+      border-color: var(--success-color);
+    }
+
+    .form-control:invalid:not(:focus):not(:placeholder-shown) {
+      border-color: var(--danger-color);
+    }
+  </style>
 </head>
-<body class="container mt-5">
-  <h2>Modifier Patient</h2>
-
-  <form method="POST" action="{{ url_for('update_patient_submit') }}">
-    <input type="hidden" name="email" value="{{ patient.email }}">
-
-    <div class="mb-3">
-      <label class="form-label">Nom</label>
-      <input type="text" class="form-control" name="nom" value="{{ patient.nom }}" required>
+<body>
+  <div class="main-container">
+    <div class="header">
+      <h2><i class="fas fa-user-injured"></i> Modifier Patient</h2>
+      <div class="subtitle">Gestion des informations personnelles</div>
     </div>
 
-    <div class="mb-3">
-      <label class="form-label">Prénom</label>
-      <input type="text" class="form-control" name="prenom" value="{{ patient.prenom }}" required>
+    <div class="form-container">
+      <form method="POST" action="{{ url_for('update_patient_submit') }}" id="patientForm">
+        <input type="hidden" name="email" value="{{ patient.email }}">
+
+        <div class="form-section">
+          <h4 class="section-title">
+            <i class="fas fa-user"></i>
+            Informations personnelles
+          </h4>
+
+          <div class="field-card">
+            <div class="form-group">
+              <label class="form-label">
+                <i class="fas fa-user field-icon"></i>
+                Nom <span class="required-asterisk">*</span>
+              </label>
+              <div class="input-container">
+                <input type="text" class="form-control" name="nom" value="{{ patient.nom }}" required
+                       placeholder="Entrez le nom du patient">
+              </div>
+            </div>
+          </div>
+
+          <div class="field-card">
+            <div class="form-group">
+              <label class="form-label">
+                <i class="fas fa-user field-icon"></i>
+                Prénom <span class="required-asterisk">*</span>
+              </label>
+              <div class="input-container">
+                <input type="text" class="form-control" name="prenom" value="{{ patient.prenom }}" required
+                       placeholder="Entrez le prénom du patient">
+              </div>
+            </div>
+          </div>
+
+          <div class="field-card">
+            <div class="form-group">
+              <label class="form-label">
+                <i class="fas fa-phone field-icon"></i>
+                Numéro <span class="required-asterisk">*</span>
+              </label>
+              <div class="input-container">
+                <input type="text" class="form-control" name="numero" value="{{ patient.numero }}" required
+                       placeholder="Entrez le numéro de téléphone">
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
     </div>
 
-    <div class="mb-3">
-      <label class="form-label">Numéro</label>
-      <input type="text" class="form-control" name="numero" value="{{ patient.numero }}" required>
+    <div class="actions-container">
+      <button type="submit" form="patientForm" class="btn btn-primary">
+        <i class="fas fa-save btn-icon"></i>Mettre à jour
+      </button>
+      <a href="{{ url_for('admin.liste_patients') }}" class="btn btn-secondary">
+        <i class="fas fa-times btn-icon"></i>Annuler
+      </a>
     </div>
+  </div>
 
-    <button type="submit" class="btn btn-primary">Mettre à jour</button>
-    <a href="{{ url_for('admin.liste_patients') }}" class="btn btn-secondary">Annuler</a>
-  </form>
+  <script>
+    // Animation de soumission du formulaire
+    document.getElementById('patientForm').addEventListener('submit', function(e) {
+      const submitBtn = document.querySelector('.btn-primary');
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin btn-icon"></i>Mise à jour...';
+      submitBtn.disabled = true;
+    });
+
+    // Validation en temps réel
+    document.querySelectorAll('.form-control').forEach(input => {
+      input.addEventListener('input', function() {
+        if (this.checkValidity()) {
+          this.style.borderColor = 'var(--success-color)';
+        } else {
+          this.style.borderColor = 'var(--danger-color)';
+        }
+      });
+
+      input.addEventListener('blur', function() {
+        if (this.value.trim() === '') {
+          this.style.borderColor = 'var(--light-gray)';
+        }
+      });
+    });
+
+    // Animation des cartes au survol
+    document.querySelectorAll('.field-card').forEach(card => {
+      card.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateY(-3px) scale(1.02)';
+      });
+
+      card.addEventListener('mouseleave', function() {
+        this.style.transform = 'translateY(0) scale(1)';
+      });
+    });
+  </script>
 </body>
 </html>

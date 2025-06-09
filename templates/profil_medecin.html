@@ -313,22 +313,22 @@
         <div class="profile-info">
             <div class="stats-row">
                 <div class="stat-item">
-                    <span class="stat-number">12</span>
+                    <span class="stat-number">{{ total }}</span>
                     <span class="stat-label">Consultations</span>
+                </div> <div class="stat-item">
+                <span class="stat-number">{{ en_cours }}</span>
+                <span class="stat-label">RDV à venir</span>
+            </div>
+                <div class="stat-item">
+                    <span class="stat-number">{{ terminees }}</span>
+                    <span class="stat-label">Consultations terminées</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-number">3</span>
-                    <span class="stat-label">RDV à venir</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-number">2</span>
-                    <span class="stat-label">Années</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-number">98%</span>
-                    <span class="stat-label">Satisfaction</span>
+                    <span class="stat-number">{{ annulees }}</span>
+                <span class="stat-label">Consultations annulées</span>
                 </div>
             </div>
+        </div>
 
             <h2 class="section-title">Informations Personnelles</h2>
 
