@@ -1,8 +1,12 @@
 import calendar
+import os
 
 import bcrypt
 from bson import ObjectId
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
+from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.utils import secure_filename
+
 from config.database import mongo_db, neo4j_driver
 from routes.admin_routes import admin_bp
 from routes.medecin_routes import medecin_bp
@@ -125,26 +129,56 @@ def profil_medecin():
 
 @app.route('/modifier_profil', methods=['GET', 'POST'])
 def modifier_profil():
-    if session.get('user') != 'patient':
-        flash("Accès refusé", "danger")
+    if 'email' not in session:
         return redirect(url_for('login'))
 
-    email = session.get('email')
-    patient = get_patient_by_email(email)
+    email_session = session['email']
+    patient = get_patient_by_email(email_session)
 
     if request.method == 'POST':
+        # Récupération des champs du formulaire
         nom = request.form.get('nom')
         prenom = request.form.get('prenom')
+        new_email = request.form.get('email')
         numero = request.form.get('numero')
+        current_password = request.form.get('current_password')
+        new_password = request.form.get('new_password')
+        confirm_password = request.form.get('confirm_password')
 
-        mongo_db.patients.update_one(
-            {"email": email},
-            {"$set": {"nom": nom, "prenom": prenom, "numero": numero}}
-        )
-        flash("Profil mis à jour avec succès", "success")
-        return redirect(url_for('profil_patient'))
+        update_fields = {
+            "nom": nom,
+            "prenom": prenom,
+            "email": new_email,
+            "numero": numero
+        }
+
+        # Si l'utilisateur veut changer son mot de passe
+        if new_password or confirm_password:
+            if new_password != confirm_password:
+                return render_template("modifier_profil.html", patient=patient, error="Les nouveaux mots de passe ne correspondent pas.")
+
+            mot_de_passe_hache = patient.get("mot_de_passe")
+            if not current_password or not mot_de_passe_hache or not bcrypt.checkpw(current_password.encode('utf-8'), mot_de_passe_hache.encode('utf-8')):
+                return render_template("modifier_profil.html", patient=patient, error="Mot de passe actuel incorrect.")
+
+            # Hash du nouveau mot de passe
+            hashed_new_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+            update_fields["mot_de_passe"] = hashed_new_password
+
+        # Mise à jour dans MongoDB avec l'email en session pour identifier le patient
+        mongo_db.patients.update_one({"email": email_session}, {"$set": update_fields})
+
+        # Mise à jour de la session si l'email a changé
+        if new_email != email_session:
+            session['email'] = new_email
+
+        flash("Profil mis à jour avec succès.")
+        return redirect(url_for('modifier_profil'))
 
     return render_template("modifier_profil.html", patient=patient)
+
+
+
 
 @app.route('/modifier_profil_medecin', methods=['GET', 'POST'])
 def modifier_profil_medecin():
@@ -152,22 +186,61 @@ def modifier_profil_medecin():
         flash("Accès refusé", "danger")
         return redirect(url_for('login'))
 
-    email = session.get('email')
-    medecin = get_medecin_by_email(email)
+    email_session = session.get('email')
+    medecin = get_medecin_by_email(email_session)
 
     if request.method == 'POST':
+        # Récupération des données du formulaire
         nom = request.form.get('nom')
         prenom = request.form.get('prenom')
+        email = request.form.get('email')
         specialite = request.form.get('specialite')
+        current_password = request.form.get('current_password')
+        new_password = request.form.get('new_password')
+        confirm_password = request.form.get('confirm_password')
 
+        update_data = {
+            'nom': nom,
+            'prenom': prenom,
+            'email': email,
+            'specialite': specialite
+        }
+
+        # Si l'utilisateur veut changer son mot de passe
+        if new_password or confirm_password:
+            # Vérifier que les deux mots de passe correspondent
+            if new_password != confirm_password:
+                return render_template('modifier_profil_medecin.html', medecin=medecin,
+                                       erreur="Les nouveaux mots de passe ne correspondent pas")
+
+            # Vérifier le mot de passe actuel
+            if not current_password or not bcrypt.checkpw(current_password.encode('utf-8'), medecin['mot_de_passe'].encode('utf-8')):
+                return render_template('modifier_profil_medecin.html', medecin=medecin,
+                                       erreur="Mot de passe actuel incorrect")
+
+            # Hacher le nouveau mot de passe et l'ajouter à la mise à jour
+            hashed = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+            update_data['mot_de_passe'] = hashed
+
+        # Mise à jour dans la base MongoDB
         mongo_db.medecins.update_one(
-            {"email": email},
-            {"$set": {"nom": nom, "prenom": prenom, "specialite": specialite}}
+            {"email": email_session},  # On identifie par l'email de session pour éviter conflits
+            {'$set': update_data}
         )
+
+        # Mettre à jour la session email si modifié
+        session['email'] = email
+
+        # Recharger les données
+        medecin.update(update_data)
+
         flash("Profil mis à jour avec succès", "success")
         return redirect(url_for('profil_medecin'))
 
-    return render_template("modifier_profil_medecin.html", medecin=medecin)
+    return render_template('modifier_profil_medecin.html', medecin=medecin)
+
+
+
 @app.route('/medecin', methods=['POST'])
 def create_medecin_route():
     try:
