@@ -3,17 +3,24 @@ from datetime import datetime
 from flask import current_app
 
 from config.database import mongo_db, neo4j_driver
+import bcrypt
 
 
 def create_patient(nom, prenom, email, numero=None, mot_de_passe=None):
     try:
+        # Hachage du mot de passe
+        if not mot_de_passe:
+            return False, "Le mot de passe est requis"
+        hashed_pw = bcrypt.hashpw(mot_de_passe.encode('utf-8'), bcrypt.gensalt())
+
         patient_data = {
             "nom": nom,
             "prenom": prenom,
             "email": email,
             "numero": numero,
-            "mot_de_passe": mot_de_passe
+            "mot_de_passe": hashed_pw.decode('utf-8')  # Stocké en tant que string
         }
+
         result = mongo_db.patients.insert_one(patient_data)
         patient_id = str(result.inserted_id)
 
@@ -33,9 +40,10 @@ def create_patient(nom, prenom, email, numero=None, mot_de_passe=None):
         return False, str(e)
 
 
+
 def create_medecin(nom, prenom, email, specialite=None, horaires=None, mot_de_passe=None):
     try:
-        # Si les paramètres viennent d'un dictionnaire (cas de create_medecin_route)
+        # Si les paramètres viennent d'un dictionnaire
         if isinstance(nom, dict):
             data = nom
             nom = data.get('nom')
@@ -45,26 +53,24 @@ def create_medecin(nom, prenom, email, specialite=None, horaires=None, mot_de_pa
             horaires = data.get('horaires', {})
             mot_de_passe = data.get('mot_de_passe')
 
-        # Validation des champs obligatoires
         if not all([nom, prenom, email, mot_de_passe, specialite]):
             return False, "Tous les champs obligatoires doivent être fournis"
 
-        # Préparation des données pour MongoDB
+        # Hachage du mot de passe
+        hashed_pw = bcrypt.hashpw(mot_de_passe.encode('utf-8'), bcrypt.gensalt())
+
         medecin_data = {
             "nom": nom,
             "prenom": prenom,
             "email": email,
             "specialite": specialite,
             "horaires": horaires or {},
-            "mot_de_passe": mot_de_passe
-
+            "mot_de_passe": hashed_pw.decode('utf-8')  # Stocké sous forme de chaîne
         }
 
-        # Insertion dans MongoDB
         result = mongo_db.medecins.insert_one(medecin_data)
         medecin_id = str(result.inserted_id)
 
-        # Création dans Neo4j
         with neo4j_driver.session() as session:
             session.run("""
                 CREATE (m:Medecin {
@@ -86,6 +92,7 @@ def create_medecin(nom, prenom, email, specialite=None, horaires=None, mot_de_pa
     except Exception as e:
         print(f"Erreur dans create_medecin: {str(e)}")
         return False, str(e)
+
 
 def get_medecin_by_email(email):
     medecin = mongo_db.medecins.find_one({"email": email})

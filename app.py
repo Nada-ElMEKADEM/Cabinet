@@ -1,5 +1,6 @@
 import calendar
 
+import bcrypt
 from bson import ObjectId
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from config.database import mongo_db, neo4j_driver
@@ -229,23 +230,31 @@ def login():
         user = request.form['username']
         pwd = request.form['password']
 
+        # Admin (non haché car défini en dur)
         if user == 'admin' and pwd == 'admin':
             session['user'] = 'admin'
             session['email'] = None
             return redirect(url_for('admin'))
 
+        # Vérifier si utilisateur est un médecin
         medecin = get_medecin_by_email(user)
-        if medecin and medecin.get('mot_de_passe') == pwd:
-            session['user'] = 'medecin'
-            session['email'] = medecin['email']
-            return redirect(url_for('medecin_page', email=medecin['email']))
+        if medecin:
+            mot_de_passe_hache = medecin.get('mot_de_passe')
+            if mot_de_passe_hache and bcrypt.checkpw(pwd.encode('utf-8'), mot_de_passe_hache.encode('utf-8')):
+                session['user'] = 'medecin'
+                session['email'] = medecin['email']
+                return redirect(url_for('medecin_page', email=medecin['email']))
 
+        # Vérifier si utilisateur est un patient
         patient = get_patient_by_email(user)
-        if patient and patient.get('mot_de_passe') == pwd:
-            session['user'] = 'patient'
-            session['email'] = patient['email']
-            return redirect(url_for('patient_page', email=patient['email']))
+        if patient:
+            mot_de_passe_hache = patient.get('mot_de_passe')
+            if mot_de_passe_hache and bcrypt.checkpw(pwd.encode('utf-8'), mot_de_passe_hache.encode('utf-8')):
+                session['user'] = 'patient'
+                session['email'] = patient['email']
+                return redirect(url_for('patient_page', email=patient['email']))
 
+        # Mauvais identifiants
         return render_template('login.html', error='Mauvais identifiants')
 
     return render_template('login.html')
