@@ -373,15 +373,27 @@
                 </div>
 
                 <div class="info-item">
-                    <div class="info-header">
-                        <div class="info-icon">
-                            <i class="fas fa-phone"></i>
-                        </div>
-                        <div class="info-label">Horaire</div>
-                    </div>
-                    <div class="info-value">{{medecin.horaires}}</div>
-                </div>
+    <div class="info-header">
+        <div class="info-icon">
+            <i class="fas fa-clock"></i>
+        </div>
+        <div class="info-label">Horaire</div>
+    </div>
+    <div class="info-value">
+        <ul class="horaire-liste">
+            {% for jour, creneaux in medecin.horaires.items() %}
+                <li>
+                    <strong>{{ jour.capitalize() }}:</strong>
+                    {% for creneau in creneaux %}
+                        {{ creneau.start }} - {{ creneau.end }}{% if not loop.last %}, {% endif %}
+                    {% endfor %}
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
             </div>
+
 
             <div class="action-section">
                 <div class="action-buttons">

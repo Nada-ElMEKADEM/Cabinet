@@ -220,6 +220,8 @@ def medecin_page(email):
     return render_template('medecin.html', medecin=medecin)
 
 
+from datetime import datetime
+
 @app.route('/patient/<email>')
 def patient_page(email):
     # Vérification d'accès
@@ -233,6 +235,8 @@ def patient_page(email):
     patient = get_patient_by_email(email)
     consultations = list(mongo_db.consultations.find({"patient_email": email}))
 
+    now = datetime.now().date()  # Date d'aujourd'hui
+
     for c in consultations:
         c["date"] = c.get("date", "N/A")
         c["heure"] = c.get("heure", "N/A")
@@ -240,20 +244,36 @@ def patient_page(email):
         c["specialite"] = c.get("specialite", "N/A")
         c["_id"] = str(c["_id"])
 
+        # --- Mise à jour automatique du statut si la date est dépassée ---
+        try:
+            consultation_date = datetime.strptime(c["date"], "%Y-%m-%d").date()
+            if consultation_date < now and c.get("statut") == "en_cours":
+                mongo_db.consultations.update_one(
+                    {"_id": ObjectId(c["_id"])},
+                    {"$set": {"statut": "terminee"}}
+                )
+                c["statut"] = "terminee"  # Mettre à jour aussi dans l'objet local
+        except Exception as e:
+            print(f"Erreur lors du parsing ou mise à jour de la date : {e}")
+
     return render_template('patient.html', patient=patient, consultations=consultations)
+
 
 from bson import ObjectId
 
 
-@app.route('/consultation/delete/<consultation_id>')
-def delete_consultation(consultation_id):
-    result = mongo_db.consultations.delete_one({"_id": ObjectId(consultation_id)})
-    if result.deleted_count == 1:
-        flash("Consultation supprimée avec succès.", "success")
-    else:
-        flash("Consultation non trouvée.", "danger")
-    return redirect(url_for('patient_page', email=session.get('email')))
 
+
+@app.route('/consultation/annuler_consultation/<consultation_id>')
+def delete_consultation(consultation_id):
+    consultation = mongo_db.consultations.find_one({"_id": ObjectId(consultation_id)})
+    if consultation:
+        mongo_db.consultations.update_one(
+            {"_id": ObjectId(consultation_id)},
+            {"$set": {"statut": "annule"}}
+        )
+        flash("Consultation annulée avec succès.", "info")
+    return redirect(url_for('patient_page', email=session.get('email')))
 
 @app.route('/consultation/update/<consultation_id>', methods=['GET'])
 def update_consultation_form(consultation_id):
@@ -411,7 +431,8 @@ def book():
             "date": jour_creneau,
             "heure": heure_debut,
             "heure_fin": heure_fin,
-            "created_at": datetime.utcnow()
+            "created_at": datetime.utcnow(),
+            "statut": "en_cours"
         }
         mongo_db.consultations.insert_one(consultation)
 

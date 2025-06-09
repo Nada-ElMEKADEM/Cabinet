@@ -18,7 +18,7 @@
 
 <!-- Historique des consultations -->
 <div class="section history-section">
-    <h2>Mes consultations passées</h2>
+    <h2>Mes consultations </h2>
 
     {% if consultations %}
         <div class="table-responsive">
@@ -29,6 +29,7 @@
                         <th>Heure</th>
                         <th>Médecin</th>
                         <th>Spécialité</th>
+                        <th>Statut</th> <!-- Nouvelle colonne -->
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -40,9 +41,23 @@
                         <td>{{ c.medecin_nom }}</td>
                         <td>{{ c.specialite }}</td>
                         <td>
+                            {% if c.statut == 'annule' %}
+                                <span class="badge bg-danger">Annulée</span>
+                            {% elif c.statut == 'terminee' %}
+                                <span class="badge bg-secondary">Terminée</span>
+                            {% else %}
+                                <span class="badge bg-success">En cours</span>
+                            {% endif %}
+                        </td>
+                        <td>
                             <div class="action-buttons">
                                 <a href="{{ url_for('update_consultation_form', consultation_id=c._id) }}" class="btn btn-sm btn-warning">📝 Modifier</a>
-                                <a href="{{ url_for('delete_consultation', consultation_id=c._id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Supprimer cette consultation ?')">🗑️ Supprimer</a>
+
+                                {% if c.statut == 'en_cours' %}
+                                    <a href="{{ url_for('delete_consultation', consultation_id=c._id) }}" class="btn btn-sm btn-danger">
+                                        Annuler
+                                    </a>
+                                {% endif %}
                             </div>
                         </td>
                     </tr>
@@ -56,4 +71,6 @@
         </div>
     {% endif %}
 </div>
+
+
 {% endblock %}

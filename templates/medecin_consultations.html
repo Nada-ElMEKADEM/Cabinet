@@ -345,66 +345,77 @@
   </div>
 
   <div class="table-container fade-in">
-    <div class="table-wrapper">
-      {% if consultations %}
-        <table class="table table-striped table-bordered">
-          <thead class="table-dark">
+  <div class="table-wrapper">
+    {% if consultations %}
+      <table class="table table-striped table-bordered">
+        <thead class="table-dark">
+          <tr>
+            <th><i class="fas fa-calendar-alt"></i> Date</th>
+            <th><i class="fas fa-clock"></i> Heure</th>
+            <th><i class="fas fa-user"></i> Patient (Email)</th>
+            <th><i class="fas fa-info-circle"></i> Statut</th> <!-- Nouvelle colonne -->
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in consultations %}
             <tr>
-              <th><i class="fas fa-calendar-alt"></i>Date</th>
-              <th><i class="fas fa-clock"></i>Heure</th>
-              <th><i class="fas fa-user"></i>Patient (Email)</th>
+              <td>
+                <div class="date-cell">
+                  <div class="date-icon">
+                    <i class="fas fa-calendar-day"></i>
+                  </div>
+                  <div>
+                    <div style="font-weight: 600;">{{ c.date }}</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="time-cell">
+                  <div class="time-badge">
+                    <i class="fas fa-clock"></i>
+                    {{ c.heure }}
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="patient-cell">
+                  <div class="patient-avatar">
+                    {% set email_parts = c.patient_email.split('@') %}
+                    {% set name_parts = email_parts[0].split('.') %}
+                    {% if name_parts|length > 1 %}
+                      {{ name_parts[0][0].upper() }}{{ name_parts[1][0].upper() }}
+                    {% else %}
+                      {{ email_parts[0][0].upper() }}{{ email_parts[0][1].upper() if email_parts[0]|length > 1 else 'X' }}
+                    {% endif %}
+                  </div>
+                  <div class="patient-info">
+                    <div class="patient-email">{{ c.patient_email }}</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                {% if c.statut == 'annule' %}
+                  <span class="badge bg-danger">Annulée</span>
+                {% elif c.statut == 'terminee' %}
+                  <span class="badge bg-secondary">Terminée</span>
+                {% else %}
+                  <span class="badge bg-success">En cours</span>
+                {% endif %}
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {% for c in consultations %}
-              <tr>
-                <td>
-                  <div class="date-cell">
-                    <div class="date-icon">
-                      <i class="fas fa-calendar-day"></i>
-                    </div>
-                    <div>
-                      <div style="font-weight: 600;">{{ c.date }}</div>
-                    </div>
-                  </div>
-                </td>
-                <td>
-                  <div class="time-cell">
-                    <div class="time-badge">
-                      <i class="fas fa-clock"></i>
-                      {{ c.heure }}
-                    </div>
-                  </div>
-                </td>
-                <td>
-                  <div class="patient-cell">
-                    <div class="patient-avatar">
-                      {% set email_parts = c.patient_email.split('@') %}
-                      {% set name_parts = email_parts[0].split('.') %}
-                      {% if name_parts|length > 1 %}
-                        {{ name_parts[0][0].upper() }}{{ name_parts[1][0].upper() }}
-                      {% else %}
-                        {{ email_parts[0][0].upper() }}{{ email_parts[0][1].upper() if email_parts[0]|length > 1 else 'X' }}
-                      {% endif %}
-                    </div>
-                    <div class="patient-info">
-                      <div class="patient-email">{{ c.patient_email }}</div>
-                    </div>
-                  </div>
-                </td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      {% else %}
-        <div class="empty-state">
-          <i class="fas fa-calendar-times"></i>
-          <h4>Aucune consultation programmée</h4>
-          <p>Les consultations apparaîtront ici une fois planifiées.</p>
-        </div>
-      {% endif %}
-    </div>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="empty-state">
+        <i class="fas fa-calendar-times"></i>
+        <h4>Aucune consultation programmée</h4>
+        <p>Les consultations apparaîtront ici une fois planifiées.</p>
+      </div>
+    {% endif %}
   </div>
+</div>
+
 
   <script>
     // Animation d'entrée pour les lignes du tableau
