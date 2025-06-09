@@ -274,18 +274,14 @@ from datetime import datetime
 
 @app.route('/patient/<email>')
 def patient_page(email):
-    # Vérification d'accès
     if session.get('user') != 'patient' or session.get('email') != email:
         flash("Accès refusé", "danger")
         return redirect(url_for('login'))
 
-    # Définir le user_type dans la session (nécessaire pour base.html)
     session['user_type'] = 'patient'
-
     patient = get_patient_by_email(email)
     consultations = list(mongo_db.consultations.find({"patient_email": email}))
-
-    now = datetime.utcnow()  # Date d'aujourd'hui
+    now = datetime.utcnow()
 
     for c in consultations:
         c["date"] = c.get("date", "N/A")
@@ -294,7 +290,20 @@ def patient_page(email):
         c["specialite"] = c.get("specialite", "N/A")
         c["_id"] = str(c["_id"])
 
-        # --- Mise à jour automatique du statut si la date est dépassée ---
+        # Convertir en datetime si ce sont des chaînes
+        try:
+            if isinstance(c.get("date_heure"), str):
+                c["date_heure"] = datetime.fromisoformat(c["date_heure"])
+        except Exception:
+            c["date_heure"] = None
+
+        try:
+            if isinstance(c.get("heure_fin"), str):
+                c["heure_fin"] = datetime.fromisoformat(c["heure_fin"])
+        except Exception:
+            c["heure_fin"] = None
+
+        # Mise à jour du statut
         heure_fin = c.get("heure_fin")
         if c["statut"] == "en_cours" and isinstance(heure_fin, datetime) and heure_fin < now:
             mongo_db.db.consultations.update_one(
@@ -324,100 +333,72 @@ def delete_consultation(consultation_id):
 
 @app.route('/consultation/update/<consultation_id>', methods=['GET'])
 def update_consultation_form(consultation_id):
+    if session.get('user') != 'patient':
+        flash("Veuillez vous connecter en tant que patient", "danger")
+        return redirect(url_for('login'))
+
     consultation = mongo_db.consultations.find_one({"_id": ObjectId(consultation_id)})
     if not consultation:
         flash("Consultation introuvable", "danger")
         return redirect(url_for('patient_page', email=session.get('email')))
 
-    consultation["_id"] = str(consultation["_id"])  # Pour utilisation dans le template
-
-    # Liste des spécialités
-    specialites = mongo_db.medecins.distinct("specialite")
-
-    # Optionnel : récupérer tous les médecins pour affichage dans le formulaire
-    medecins = list(mongo_db.medecins.find({}))
-
-    # Convertir ObjectId en str pour le template
-    for med in medecins:
-        med["_id"] = str(med["_id"])
-
-    return render_template(
-        'update_consultation.html',
-        consultation=consultation,
-        specialites=specialites,
-        medecins=medecins
-    )
+    medecin = mongo_db.medecins.find_one({"_id": ObjectId(consultation['medecin_id'])})
+    return render_template('update_consultation.html', consultation=consultation, medecin=medecin)
 
 
 from datetime import datetime, time
 
 @app.route('/consultation/update/submit', methods=['POST'])
 def update_consultation_submit():
+    if session.get('user') != 'patient':
+        flash("Veuillez vous connecter en tant que patient", "danger")
+        return redirect(url_for('login'))
+
+    consultation_id = request.form.get('consultation_id')
+    nouvelle_date = request.form.get('date')
+    nouveau_creneau = request.form.get('creneau')
+
+    if not consultation_id or not nouvelle_date or not nouveau_creneau:
+        flash("Tous les champs sont requis.", "danger")
+        return redirect(request.referrer)
+
     try:
-        consultation_id = request.form['consultation_id']
-        specialite = request.form["specialite"]
-        medecin_id = request.form["medecin_id"]
-        date = request.form["date"]            # ex: "lundi"
-        heure = request.form["heure"]          # ex: "14:00"
-        heure_fin = request.form["heure_fin"]  # ex: "16:00"
-
-        # Convertir heure et heure_fin en objets time pour comparaison
-        heure_obj = datetime.strptime(heure, "%H:%M").time()
-        heure_fin_obj = datetime.strptime(heure_fin, "%H:%M").time()
-
-        if heure_obj >= heure_fin_obj:
-            flash("L'heure de début doit être inférieure à l'heure de fin.", "danger")
-            return redirect(url_for('update_consultation_form', consultation_id=consultation_id))
-
-        # Trouver le médecin
-        medecin = mongo_db.medecins.find_one({"_id": ObjectId(medecin_id)})
-        if not medecin:
-            flash("Médecin introuvable.", "danger")
-            return redirect(url_for('update_consultation_form', consultation_id=consultation_id))
-
-        # Vérifier que le médecin a bien des horaires définis pour ce jour
-        horaires_jour = medecin.get('horaires', {}).get(date.lower(), [])
-        if not horaires_jour:
-            flash(f"Le médecin n'a pas d'horaires définis pour {date}.", "danger")
-            return redirect(url_for('update_consultation_form', consultation_id=consultation_id))
-
-        # Vérifier que l'horaire demandé est inclus dans au moins un des créneaux du médecin
-        horaire_valide = False
-        for c in horaires_jour:
-            try:
-                start = datetime.strptime(c['start'], "%H:%M").time()
-                end = datetime.strptime(c['end'], "%H:%M").time()
-            except Exception:
-                continue
-            # Vérification que le créneau demandé est dans le créneau du médecin
-            if heure_obj >= start and heure_fin_obj <= end:
-                horaire_valide = True
-                break
-
-        if not horaire_valide:
-            flash(f"L'horaire demandé ({heure} - {heure_fin}) n'est pas disponible pour le médecin ce jour.", "danger")
-            return redirect(url_for('update_consultation_form', consultation_id=consultation_id))
-
-        medecin_nom = f"{medecin.get('prenom', '')} {medecin.get('nom', '')}".strip()
-
-        updated_data = {
-            "specialite": specialite,
-            "medecin_id": medecin_id,
-            "medecin_nom": medecin_nom,
-            "date": date,
-            "heure": heure,
-            "heure_fin": heure_fin,
-        }
-
-        mongo_db.consultations.update_one(
-            {"_id": ObjectId(consultation_id)},
-            {"$set": updated_data}
-        )
-        flash("Consultation mise à jour avec succès", "success")
-        return redirect(url_for('patient_page', email=session.get('email')))
+        heure_debut, heure_fin = nouveau_creneau.split(' - ')
+        start_datetime = datetime.strptime(f"{nouvelle_date} {heure_debut}", "%Y-%m-%d %H:%M")
+        end_datetime = datetime.strptime(f"{nouvelle_date} {heure_fin}", "%Y-%m-%d %H:%M")
     except Exception as e:
-        flash(f"Erreur lors de la mise à jour : {str(e)}", "danger")
+        flash("Format invalide pour la date ou le créneau.", "danger")
+        return redirect(request.referrer)
+
+    consultation = mongo_db.consultations.find_one({"_id": ObjectId(consultation_id)})
+    if not consultation:
+        flash("Consultation non trouvée.", "danger")
         return redirect(url_for('patient_page', email=session.get('email')))
+
+    # Vérifier si le créneau est déjà pris
+    conflit = mongo_db.consultations.find_one({
+        "_id": {"$ne": ObjectId(consultation_id)},
+        "medecin_id": consultation['medecin_id'],
+        "date_heure": start_datetime
+    })
+    if conflit:
+        flash("⚠️ Ce créneau est déjà réservé.", "warning")
+        return redirect(request.referrer)
+
+    # Mise à jour
+    mongo_db.consultations.update_one(
+        {"_id": ObjectId(consultation_id)},
+        {
+            "$set": {
+                "date_heure": start_datetime,
+                "heure_fin": end_datetime
+            }
+        }
+    )
+
+    flash("✅ Consultation mise à jour avec succès.", "success")
+    return redirect(url_for('patient_page', email=session.get('email')))
+
 
 @app.route('/admin')
 def admin():

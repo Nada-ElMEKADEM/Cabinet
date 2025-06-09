@@ -65,21 +65,20 @@
             </thead>
             <tbody>
                 {% for c in consultations %}
-                <tr>
-                    <td>
-                        {% if c.date_heure %}
-                            {{ c.date_heure.strftime('%d/%m/%Y') }}
-                        {% else %}
-                            N/A
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if c.date_heure and c.heure_fin %}
-                            De {{ c.date_heure.strftime('%H:%M') }} à {{ c.heure_fin.strftime('%H:%M') }}
-                        {% else %}
-                            N/A
-                        {% endif %}
-                    </td>
+                <td>
+            {% if c.date_heure %}
+                {{ c.date_heure.strftime('%d/%m/%Y') }}
+            {% else %}
+                N/A
+            {% endif %}
+        </td>
+        <td>
+            {% if c.date_heure and c.heure_fin %}
+                De {{ c.date_heure.strftime('%H:%M') }} à {{ c.heure_fin.strftime('%H:%M') }}
+            {% else %}
+                N/A
+            {% endif %}
+        </td>
                     <td>{{ c.medecin_nom }}</td>
                     <td>{{ c.specialite }}</td>
                     <td>

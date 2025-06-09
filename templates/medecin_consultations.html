@@ -345,86 +345,100 @@
   </div>
 
   <div class="table-container fade-in">
-  <div class="table-wrapper">
-    {% if consultations %}
-      <table class="table table-striped table-bordered">
-        <thead class="table-dark">
-          <tr>
-            <th><i class="fas fa-calendar-alt"></i> Date</th>
-            <th><i class="fas fa-clock"></i> Heure</th>
-            <th><i class="fas fa-user"></i> Patient (Email)</th>
-            <th><i class="fas fa-info-circle"></i> Statut</th> <!-- Nouvelle colonne -->
-          </tr>
-        </thead>
-        <tbody>
-          {% for c in consultations %}
+    <div class="table-wrapper">
+      {% if consultations %}
+        <table class="table table-striped table-bordered">
+          <thead class="table-dark">
             <tr>
-              <td>
-                <div class="date-cell">
-                  <div class="date-icon">
-                    <i class="fas fa-calendar-day"></i>
-                  </div>
-                  <div>
+              <th><i class="fas fa-calendar-alt"></i> Date</th>
+              <th><i class="fas fa-clock"></i> Heure</th>
+              <th><i class="fas fa-user"></i> Patient (Email)</th>
+              <th><i class="fas fa-info-circle"></i> Statut</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in consultations %}
+              <tr>
+                <!-- Date -->
+                <td>
+                  <div class="date-cell">
+                    <div class="date-icon">
+                      <i class="fas fa-calendar-day"></i>
+                    </div>
                     <div>
-                        {% if c.date_heure %}
-                            {{ c.date_heure.strftime('%d/%m/%Y') }}
-                        {% else %}
-                            N/A
-                        {% endif %}
+                      {% if c.date_heure %}
+                        {{ c.date_heure.strftime('%d/%m/%Y') }}
+                      {% else %}
+                        N/A
+                      {% endif %}
                     </div>
                   </div>
-                </div>
-              </td>
-              <td>
-                <div class="time-cell">
-                  <div class="time-badge">
-                    <i class="fas fa-clock"></i>
-                    {% if c.date_heure and c.heure_fin %}
-                            De {{ c.date_heure.strftime('%H:%M') }} à {{ c.heure_fin.strftime('%H:%M') }}
+                </td>
+
+                <!-- Heure -->
+                <td>
+                  <div class="time-cell">
+                    <div class="time-badge">
+                      <i class="fas fa-clock"></i>
+                      {% if c.date_heure and c.heure_fin %}
+                        De {{ c.date_heure.strftime('%H:%M') }} à {{ c.heure_fin.strftime('%H:%M') }}
+                      {% else %}
+                        N/A
+                      {% endif %}
+                    </div>
+                  </div>
+                </td>
+
+                <!-- Patient -->
+                <td>
+                  <div class="patient-cell">
+                    <div class="patient-avatar">
+                      {% if c.patient_email %}
+                        {% set email_parts = c.patient_email.split('@') %}
+                        {% if email_parts|length > 0 %}
+                          {% set name_parts = email_parts[0].split('.') %}
+                          {% if name_parts|length > 1 %}
+                            {{ name_parts[0][0].upper() }}{{ name_parts[1][0].upper() }}
+                          {% else %}
+                            {{ email_parts[0][0].upper() }}{{ email_parts[0][1].upper() if email_parts[0]|length > 1 else 'X' }}
+                          {% endif %}
                         {% else %}
-                            N/A
+                          XX
                         {% endif %}
+                      {% else %}
+                        XX
+                      {% endif %}
+                    </div>
+                    <div class="patient-info">
+                      <div class="patient-email">{{ c.patient_email or 'Inconnu' }}</div>
+                    </div>
                   </div>
-                </div>
-              </td>
-              <td>
-                <div class="patient-cell">
-                  <div class="patient-avatar">
-                    {% set email_parts = c.patient_email.split('@') %}
-                    {% set name_parts = email_parts[0].split('.') %}
-                    {% if name_parts|length > 1 %}
-                      {{ name_parts[0][0].upper() }}{{ name_parts[1][0].upper() }}
-                    {% else %}
-                      {{ email_parts[0][0].upper() }}{{ email_parts[0][1].upper() if email_parts[0]|length > 1 else 'X' }}
-                    {% endif %}
-                  </div>
-                  <div class="patient-info">
-                    <div class="patient-email">{{ c.patient_email }}</div>
-                  </div>
-                </div>
-              </td>
-              <td>
-                {% if c.statut == 'annule' %}
-                  <span class="badge bg-danger">Annulée</span>
-                {% elif c.statut == 'terminee' %}
-                  <span class="badge bg-secondary">Terminée</span>
-                {% else %}
-                  <span class="badge bg-success">En cours</span>
-                {% endif %}
-              </td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    {% else %}
-      <div class="empty-state">
-        <i class="fas fa-calendar-times"></i>
-        <h4>Aucune consultation programmée</h4>
-        <p>Les consultations apparaîtront ici une fois planifiées.</p>
-      </div>
-    {% endif %}
+                </td>
+
+                <!-- Statut -->
+                <td>
+                  {% if c.statut == 'annule' %}
+                    <span class="badge bg-danger">Annulée</span>
+                  {% elif c.statut == 'terminee' %}
+                    <span class="badge bg-secondary">Terminée</span>
+                  {% else %}
+                    <span class="badge bg-success">En cours</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <div class="empty-state">
+          <i class="fas fa-calendar-times"></i>
+          <h4>Aucune consultation programmée</h4>
+          <p>Les consultations apparaîtront ici une fois planifiées.</p>
+        </div>
+      {% endif %}
+    </div>
   </div>
-</div>
+
 
 
   <script>
