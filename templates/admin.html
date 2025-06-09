@@ -189,32 +189,89 @@
             .content-section {
                 padding: 20px;
             }
+            .menu-icon {
+        width: 80px;
+        height: 80px;
+        margin-bottom: 1rem;
+    }
+
+    .menu-icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+
+    .menu-content h3 {
+        font-size: 1.2rem;
+        margin-bottom: 0.5rem;
+        color: #2c3e50;
+    }
+
+    .menu-content p {
+        font-size: 0.9rem;
+        color: #6c757d;
+        margin: 0;
+    }
+
+    @media (max-width: 768px) {
+        .menu {
+            grid-template-columns: 1fr;
         }
+
+        .menu-item {
+            flex-direction: row;
+            text-align: left;
+            padding: 1.25rem;
+        }
+
+        .menu-icon {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 0;
+            margin-right: 1rem;
+        }
+    }}
     </style>
 </head>
 <body>
+   {% include 'admin_navbar.html' %}
     <div class="container">
         <div class="header">
             <h1>Bienvenue, Admin</h1>
             <p class="subtitle">Gérez votre système de santé en toute simplicité</p>
         </div>
 
-        <div class="menu">
-            <a href="/admin/add-user" class="menu-item">
-                <h3>Ajouter un utilisateur</h3>
-                <p>Créer de nouveaux comptes médecins ou patients</p>
-            </a>
-            <a href="/admin/medecins" class="menu-item">
-                <h3>Voir les médecins</h3>
-                <p>Consulter la liste complète des praticiens</p>
-            </a>
-            <a href="/admin/patients" class="menu-item">
-                <h3>Voir les patients</h3>
-                <p>Accéder au répertoire des patients</p>
-            </a>
+       <div class="menu">
+    <a href="/admin/add-user" class="menu-item">
+        <div class="menu-icon">
+            <img src="/static/images/doctor.png" alt="Ajouter utilisateur">
         </div>
+        <div class="menu-content">
+            <h3>Ajouter un utilisateur</h3>
+            <p>Créer de nouveaux comptes médecins ou patients</p>
+        </div>
+    </a>
 
+    <a href="/admin/medecins" class="menu-item">
+        <div class="menu-icon">
+            <img src="/static/images/doc.png" alt="Liste médecins">
+        </div>
+        <div class="menu-content">
+            <h3>Voir les médecins</h3>
+            <p>Consulter la liste complète des praticiens</p>
+        </div>
+    </a>
 
+    <a href="/admin/patients" class="menu-item">
+        <div class="menu-icon">
+            <img src="/static/images/patient.png" alt="Liste patients">
+        </div>
+        <div class="menu-content">
+            <h3>Voir les patients</h3>
+            <p>Accéder au répertoire des patients</p>
+        </div>
+    </a>
+</div>
 
         <!-- Exemple d'état vide -->
         <!--

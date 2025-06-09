@@ -4,8 +4,9 @@
   <meta charset="UTF-8" />
   <title>Liste des Médecins</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    /* Variables CSS cohérentes avec le thème de login */
     :root {
       --primary-color: #2d3748;
       --secondary-color: #4a5568;
@@ -23,7 +24,6 @@
       --transition: all 0.3s ease;
     }
 
-    /* Reset et base */
     * {
       margin: 0;
       padding: 0;
@@ -36,397 +36,508 @@
       min-height: 100vh;
       color: var(--text-primary);
       line-height: 1.6;
-      position: relative;
-      overflow-x: hidden;
-    }
-
-    body::before {
-      content: '';
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: url('data:image/svg+xml,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g fill="%23e2e8f0" fill-opacity="0.08"><circle cx="30" cy="30" r="1"/></g></svg>');
-      opacity: 0.5;
-      z-index: -1;
     }
 
     .container {
       max-width: 1200px;
       padding: 2rem 1rem;
-      position: relative;
-      z-index: 1;
+      margin: 0 auto;
     }
 
-    /* Titre principal */
-    h1 {
+    /* Navbar améliorée */
+    .navbar {
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border-color);
+      box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+      padding: 0.75rem 0;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .navbar-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .navbar-brand {
+      font-size: 1.4rem;
       font-weight: 700;
-      font-size: 2.5rem;
       color: var(--primary-color);
-      margin-bottom: 2.5rem;
-      text-align: center;
-      position: relative;
-      padding-bottom: 1rem;
-      letter-spacing: -0.025em;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
     }
 
-    h1::after {
+    .navbar-brand i {
+      font-size: 1.3rem;
+      color: var(--primary-color);
+      transition: var(--transition);
+    }
+
+    .navbar-brand:hover {
+      color: var(--secondary-color);
+    }
+
+    .navbar-brand:hover i {
+      transform: rotate(15deg);
+    }
+
+    .navbar-nav {
+      display: flex;
+      list-style: none;
+      gap: 0.5rem;
+
+    }
+
+    .nav-link {
+      color: var(--text-secondary);
+      font-weight: 500;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .nav-link:hover {
+      color: var(--primary-color);
+      background: var(--accent-color);
+    }
+
+    .nav-link i {
+      font-size: 0.9rem;
+    }
+
+    /* Titre principal amélioré */
+    .page-header {
+      text-align: center;
+      margin: 2rem 0 3rem;
+    }
+
+    .page-title {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--primary-color);
+      margin-bottom: 1rem;
+      position: relative;
+      display: inline-block;
+    }
+
+    .page-title::after {
       content: '';
       position: absolute;
-      bottom: 0;
+      bottom: -10px;
       left: 50%;
       transform: translateX(-50%);
       width: 80px;
-      height: 3px;
+      height: 4px;
       background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
       border-radius: 2px;
     }
 
-    /* Conteneur du tableau */
-    .table-container {
+    .page-subtitle {
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    /* Nouveau design des cartes utilisateurs */
+    .user-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+
+    .user-card {
       background: var(--white);
-      border-radius: 24px;
-      box-shadow: 0 20px 40px var(--shadow-light);
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.05);
       border: 1px solid var(--border-color);
       overflow: hidden;
       transition: var(--transition);
-      backdrop-filter: blur(20px);
-      position: relative;
-      z-index: 2;
     }
 
-    .table-container:hover {
-      box-shadow: 0 25px 50px var(--shadow-medium);
-      transform: translateY(-2px);
+    .user-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 40px rgba(0,0,0,0.1);
     }
 
-    /* Table styling */
-    .table {
-      margin-bottom: 0;
-      font-size: 0.95rem;
-    }
-
-    .table thead th {
+    .user-card-header {
       background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
       color: var(--white);
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      font-size: 0.85rem;
-      padding: 1.5rem 1.25rem;
-      border: none;
+      padding: 1.25rem;
       position: relative;
     }
 
-    .table thead th:first-child {
-      border-top-left-radius: 24px;
-    }
-
-    .table thead th:last-child {
-      border-top-right-radius: 24px;
-    }
-
-    .table tbody tr {
-      transition: var(--transition);
-      border-bottom: 1px solid var(--accent-color);
-    }
-
-    .table tbody tr:hover {
-      background-color: rgba(226, 232, 240, 0.1);
-      transform: translateY(-1px);
-    }
-
-    .table tbody tr:last-child {
-      border-bottom: none;
-    }
-
-    .table td {
-      padding: 1.25rem;
-      vertical-align: middle;
-      border: none;
-      color: var(--text-primary);
-      font-weight: 500;
-    }
-
-    /* Horaires styling */
-    .horaires-container {
-      max-width: 300px;
-    }
-
-    .horaire-jour {
-      margin-bottom: 0.5rem;
-      padding: 0.75rem 1rem;
-      background: rgba(226, 232, 240, 0.15);
-      border-radius: 12px;
-      border-left: 4px solid var(--primary-color);
-      transition: var(--transition);
-    }
-
-    .horaire-jour:hover {
-      background: rgba(226, 232, 240, 0.25);
-      transform: translateX(2px);
-    }
-
-    .horaire-jour:last-child {
-      margin-bottom: 0;
-    }
-
-    .jour-label {
+    .user-card-header h3 {
       font-weight: 600;
-      color: var(--primary-color);
-      font-size: 0.85rem;
-      text-transform: capitalize;
-      letter-spacing: 0.025em;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
     }
 
-    .creneaux {
-      font-size: 0.8rem;
-      color: var(--text-secondary);
-      margin-top: 0.25rem;
-      font-weight: 500;
+    .user-card-header i {
+      font-size: 1.2rem;
     }
 
-    /* Boutons d'action */
-    .btn-action {
-      width: 40px;
-      height: 40px;
-      border-radius: 12px;
-      border: none;
-      display: inline-flex;
+    .user-card-body {
+      padding: 1.5rem;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 1.5rem;
+    }
+
+    .user-avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-color), #d5dde8);
+      display: flex;
       align-items: center;
       justify-content: center;
-      margin: 0 0.25rem;
-      font-size: 1rem;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--primary-color);
+      margin-right: 1.25rem;
+      flex-shrink: 0;
+    }
+
+    .user-details {
+      flex: 1;
+    }
+
+    .user-name {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--primary-color);
+      margin-bottom: 0.25rem;
+    }
+
+    .user-email {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
+      word-break: break-all;
+    }
+
+    .user-specialty {
+      display: inline-block;
+      background: rgba(56, 161, 105, 0.1);
+      color: var(--success-color);
+      padding: 0.25rem 0.75rem;
+      border-radius: 50px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      margin-top: 0.25rem;
+    }
+
+    .user-phone {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--text-primary);
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .user-phone i {
+      color: var(--text-secondary);
+    }
+
+    /* Section horaires améliorée */
+    .schedule-section {
+      margin-top: 1.5rem;
+    }
+
+    .schedule-title {
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-secondary);
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .schedule-list {
+      list-style: none;
+    }
+
+    .schedule-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.75rem 0;
+      border-bottom: 1px dashed var(--border-color);
+    }
+
+    .schedule-day {
+      font-weight: 500;
+      color: var(--primary-color);
+      min-width: 100px;
+    }
+
+    .schedule-times {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      text-align: right;
+    }
+
+    /* Actions utilisateur */
+    .user-actions {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 1.5rem;
+      border-top: 1px solid var(--border-color);
+      padding-top: 1.5rem;
+    }
+
+    .action-btn {
+      flex: 1;
+      padding: 0.75rem;
+      border-radius: 8px;
+      font-weight: 500;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
       transition: var(--transition);
       text-decoration: none;
-      color: var(--white);
-      position: relative;
-      overflow: hidden;
     }
 
-    .btn-action::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-      transition: left 0.5s ease;
+    .edit-btn {
+      background: rgba(214, 158, 46, 0.1);
+      color: var(--warning-color);
+      border: 1px solid rgba(214, 158, 46, 0.2);
     }
 
-    .btn-action:hover::before {
-      left: 100%;
+    .edit-btn:hover {
+      background: rgba(214, 158, 46, 0.2);
     }
 
-    .btn-edit {
-      background: var(--warning-color);
-      box-shadow: 0 4px 12px rgba(214, 158, 46, 0.3);
+    .delete-btn {
+      background: rgba(229, 62, 62, 0.1);
+      color: var(--error-color);
+      border: 1px solid rgba(229, 62, 62, 0.2);
     }
 
-    .btn-edit:hover {
-      background: #b7791f;
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(214, 158, 46, 0.4);
-      color: var(--white);
+    .delete-btn:hover {
+      background: rgba(229, 62, 62, 0.2);
     }
 
-    .btn-delete {
-      background: var(--error-color);
-      box-shadow: 0 4px 12px rgba(229, 62, 62, 0.3);
-    }
-
-    .btn-delete:hover {
-      background: #c53030;
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(229, 62, 62, 0.4);
-      color: var(--white);
-    }
-
-    .btn-action:active {
-      transform: translateY(0);
-    }
-
-    /* Alert styling */
-    .alert-custom {
-      background: var(--white);
-      border: 1px solid var(--border-color);
-      border-radius: 24px;
-      box-shadow: 0 20px 40px var(--shadow-light);
-      color: var(--text-secondary);
-      padding: 3rem 2rem;
+    /* État vide */
+    .empty-state {
       text-align: center;
-      border-left: 4px solid var(--primary-color);
-      backdrop-filter: blur(20px);
-      font-weight: 500;
+      padding: 4rem 2rem;
+      background: var(--white);
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+      border: 1px solid var(--border-color);
+      max-width: 600px;
+      margin: 2rem auto;
     }
 
-    .alert-custom::before {
-      content: "ℹ️";
+    .empty-icon {
       font-size: 3rem;
-      display: block;
-      margin-bottom: 1rem;
-      opacity: 0.7;
+      color: var(--text-secondary);
+      opacity: 0.5;
+      margin-bottom: 1.5rem;
     }
 
-    /* Responsive design */
+    .empty-message {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      margin-bottom: 1.5rem;
+    }
+
+    .empty-action {
+      display: inline-block;
+      padding: 0.75rem 1.5rem;
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      color: var(--white);
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 500;
+      transition: var(--transition);
+    }
+
+    .empty-action:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(45, 55, 72, 0.2);
+    }
+
+    /* Responsive */
     @media (max-width: 768px) {
       .container {
-        padding: 1rem 0.5rem;
+        padding: 1rem;
       }
 
-      h1 {
-        font-size: 2rem;
+      .navbar-container {
+        padding: 0 1rem;
       }
 
-      .table-container {
-        border-radius: 16px;
-        margin: 0 -0.5rem;
+      .page-title {
+        font-size: 1.8rem;
       }
 
-      .table {
-        font-size: 0.85rem;
+      .user-grid {
+        grid-template-columns: 1fr;
       }
 
-      .table td, .table th {
-        padding: 1rem 0.75rem;
+      .user-info {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
       }
 
-      .table thead th:first-child {
-        border-top-left-radius: 16px;
+      .user-avatar {
+        margin-right: 0;
+        margin-bottom: 1rem;
       }
 
-      .table thead th:last-child {
-        border-top-right-radius: 16px;
-      }
-
-      .horaires-container {
-        max-width: 250px;
-      }
-
-      .btn-action {
-        width: 36px;
-        height: 36px;
-        font-size: 0.9rem;
-      }
-
-      .alert-custom {
-        border-radius: 16px;
-        padding: 2rem 1.5rem;
+      .user-actions {
+        flex-direction: column;
       }
     }
 
-    /* Animation d'entrée */
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(30px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
-    .table-container, .alert-custom {
-      animation: fadeInUp 0.6s ease-out;
+    .user-card {
+      animation: fadeIn 0.5s ease-out forwards;
     }
 
-    h1 {
-      animation: fadeInUp 0.6s ease-out 0.2s both;
-    }
-
-    /* Loading state pour les boutons */
-    .btn-action.loading {
-      pointer-events: none;
-      opacity: 0.8;
-    }
-
-    .btn-action.loading::after {
-      content: '';
-      position: absolute;
-      width: 16px;
-      height: 16px;
-      border: 2px solid transparent;
-      border-top: 2px solid white;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-    }
-
-    @keyframes spin {
-      0% { transform: translate(-50%, -50%) rotate(0deg); }
-      100% { transform: translate(-50%, -50%) rotate(360deg); }
-    }
+    .user-card:nth-child(1) { animation-delay: 0.1s; }
+    .user-card:nth-child(2) { animation-delay: 0.2s; }
+    .user-card:nth-child(3) { animation-delay: 0.3s; }
+    .user-card:nth-child(4) { animation-delay: 0.4s; }
+    .user-card:nth-child(5) { animation-delay: 0.5s; }
   </style>
 </head>
-<body class="container mt-4">
 
-  <h1>Liste des {{ role }}s</h1>
+<body>
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="/admin" class="navbar-brand">
+        <i class="fas fa-user-shield"></i> Admin Dashboard
+      </a>
+      <ul class="navbar-nav">
+        <li><a href="/logout" class="nav-link"><i class="fas fa-sign-out-alt"></i> Déconnexion</a></li>
+      </ul>
+    </div>
+  </nav>
 
-  {% if users and users|length > 0 %}
-    <div class="table-container">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Nom</th>
-            <th>Prénom</th>
-            <th>Email</th>
-            {% if role == "Médecin" %}
-              <th>Spécialité</th>
-              <th>Horaires</th>
-              <th>Actions</th>
-            {% elif role == "Patient" %}
-              <th>Numéro</th>
-              <th>Actions</th>
-            {% endif %}
-          </tr>
-        </thead>
-        <tbody>
-          {% for user in users %}
-            <tr>
-              <td>{{ user.nom }}</td>
-              <td>{{ user.prenom }}</td>
-              <td>{{ user.email }}</td>
+  <div class="container">
+    <header class="page-header">
+      <h1 class="page-title">Liste des {{ role }}s</h1>
+      <p class="page-subtitle">Gérez l'ensemble des {{ role.lower() }}s enregistrés dans le système</p>
+    </header>
 
-              {% if role == "Médecin" %}
-                <td>{{ user.specialite }}</td>
-                <td>
-                  <div class="horaires-container">
+    {% if users and users|length > 0 %}
+      <div class="user-grid">
+        {% for user in users %}
+          <div class="user-card">
+            <div class="user-card-header">
+              <h3>
+                {% if role == "Médecin" %}
+                  <i class="fas fa-user-md"></i> Dr. {{ user.prenom }} {{ user.nom }}
+                {% else %}
+                  <i class="fas fa-user-injured"></i> {{ user.prenom }} {{ user.nom }}
+                {% endif %}
+              </h3>
+            </div>
+
+            <div class="user-card-body">
+              <div class="user-info">
+                <div class="user-avatar">
+                  {{ user.prenom[0] }}{{ user.nom[0] }}
+                </div>
+                <div class="user-details">
+                  <h4 class="user-name">{{ user.prenom }} {{ user.nom }}</h4>
+                  <div class="user-email">{{ user.email }}</div>
+                  {% if role == "Médecin" %}
+                    <span class="user-specialty">{{ user.specialite }}</span>
+                  {% endif %}
+                  <div class="user-phone">
+                    <i class="fas fa-phone"></i> {{ user.numero if role == "Patient" else '+212 XXX XXX XXX' }}
+                  </div>
+                </div>
+              </div>
+
+              {% if role == "Médecin" and user.horaires %}
+                <div class="schedule-section">
+                  <h5 class="schedule-title"><i class="far fa-calendar-alt"></i> Horaires de consultation</h5>
+                  <ul class="schedule-list">
                     {% for jour, creneaux in user.horaires.items() %}
-                      <div class="horaire-jour">
-                        <div class="jour-label">{{ jour.capitalize() }}</div>
-                        <div class="creneaux">
+                      <li class="schedule-item">
+                        <span class="schedule-day">{{ jour.capitalize() }}</span>
+                        <span class="schedule-times">
                           {% for creneau in creneaux %}
                             {{ creneau.start }} - {{ creneau.end }}{% if not loop.last %}, {% endif %}
                           {% endfor %}
-                        </div>
-                      </div>
+                        </span>
+                      </li>
                     {% endfor %}
-                  </div>
-                </td>
-                <td>
-                  <a href="/medecin/update/{{ user.email }}" class="btn-action btn-edit">📝</a>
-                  <a href="/medecin/delete/{{ user.email }}" class="btn-action btn-delete" onclick="return confirm('Supprimer ce médecin ?')">🗑️</a>
-                </td>
-              {% elif role == "Patient" %}
-                <td>{{ user.numero }}</td>
-                <td>
-                  <a href="{{ url_for('update_patient_form', email=user.email) }}" class="btn-action btn-edit">📝</a>
-                  <a href="{{ url_for('delete_patient', email=user.email) }}" class="btn-action btn-delete" onclick="return confirm('Supprimer ce patient ?')">🗑️</a>
-                </td>
+                  </ul>
+                </div>
               {% endif %}
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  {% else %}
-    <div class="alert-custom mt-4">Aucun {{ role.lower() }} trouvé.</div>
-  {% endif %}
 
+              <div class="user-actions">
+                <a href="{{ url_for('update_patient_form', email=user.email) if role == 'Patient' else '/medecin/update/' + user.email }}"
+                   class="action-btn edit-btn">
+                  <i class="fas fa-edit"></i> Modifier
+                </a>
+                <a href="{{ url_for('delete_patient', email=user.email) if role == 'Patient' else '/medecin/delete/' + user.email }}"
+                   class="action-btn delete-btn"
+                   onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce {{ role.lower() }} ?')">
+                  <i class="fas fa-trash-alt"></i> Supprimer
+                </a>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-icon">
+          <i class="fas fa-user-slash"></i>
+        </div>
+        <h3 class="empty-message">Aucun {{ role.lower() }} trouvé dans le système</h3>
+        <a class="empty-action">
+          <i class="fas fa-plus"></i> Ajouter un {{ role.lower() }}
+        </a>
+      </div>
+    {% endif %}
+  </div>
+
+  <script>
+    // Confirmation avant suppression
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        if (!confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')) {
+          e.preventDefault();
+        }
+      });
+    });
+  </script>
 </body>
 </html>
